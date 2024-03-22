@@ -301,8 +301,10 @@ def main_loop(conn, script_params):
             link_file_ann(conn, source_type, source_object, file_ann)
         print("\n------------------------------------\n")
 
-    message = f"Added Annotations to \
-        {ntarget_updated}/{ntarget_processed} {target_type}(s)"
+    message = (
+        "Added Annotations to " +
+        f"{ntarget_updated}/{ntarget_processed} {target_type}(s)"
+    )
 
     if file_ann_multiplied and len(missing_names) > 0:
         # subtract the processed names/ids from the
@@ -313,8 +315,10 @@ def main_loop(conn, script_params):
         total_missing_names = len(missing_names)
 
     if total_missing_names > 0:
-        message += f". {total_missing_names} {target_type}(s) not found \
-            (using {'ID' if use_id else 'name'} to identify them)."
+        message += (
+            f". {total_missing_names} {target_type}(s) not found "
+            f"(using {'ID' if use_id else 'name'} to identify them)."
+        )
 
     return message, result_obj
 

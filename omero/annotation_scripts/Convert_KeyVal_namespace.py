@@ -156,8 +156,10 @@ def main_loop(conn, script_params):
             else:
                 print("\tNo MapAnnotation found with that namespace\n")
         print("\n------------------------------------\n")
-    message = f"Updated kv pairs to \
-        {ntarget_updated}/{ntarget_processed} {target_type}"
+    message = (
+        "Updated kv pairs to " +
+        f"{ntarget_updated}/{ntarget_processed} {target_type}"
+    )
 
     return message, result_obj
 
