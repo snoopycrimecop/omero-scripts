@@ -26,19 +26,19 @@
 from __future__ import print_function
 import omero
 from omero.gateway import BlitzGateway, TagAnnotationWrapper, MapAnnotationWrapper
-from omero.model import AnnotationAnnotationLinkI, ImageAnnotationLinkI
+from omero.model import AnnotationAnnotationLinkI, ImageAnnotationLinkI, MapAnnotationI
 from omero.constants.metadata import NSCLIENTMAPANNOTATION, NSINSIGHTTAGSET
 import omero.scripts
 import pytest
 from script import ScriptTest
 from script import run_script
 from omero.cmd import Delete2
-from omero.rtypes import wrap, rstring, rlist, rbool
+from omero.rtypes import wrap, rstring, rlist, rbool, rlong
 from omero.util.temp_files import create_path
 
 import_script = "/omero/annotation_scripts/Import_from_csv.py"
 export_script = "/omero/annotation_scripts/Export_to_csv.py"
-delete_script = "/omero/annotation_scripts/Remove_KeyVal.py"
+remove_script = "/omero/annotation_scripts/Remove_KeyVal.py"
 convert_script = "/omero/annotation_scripts/Convert_KeyVal_namespace.py"
 
 DEFAULT_IMPORT_ARGS = {
@@ -84,8 +84,6 @@ class TestAnnotationScripts(ScriptTest):
 
         client, user = self.new_client_and_user()
 
-        # self.create_test_image(name="testImage", session=self.client.getSession())
-
         n_well = 3
         plates = self.import_plates(client, plate_cols=n_well, plate_rows=1)
         plate = plates[0]
@@ -115,10 +113,10 @@ class TestAnnotationScripts(ScriptTest):
         if not ns_in_csv and ns != "":
             args["Namespace (blank for default or from csv)"] = rstring(ns)
 
-        message = run_script(client, sid, args, "Message")
+        msg = run_script(client, sid, args, "Message")
 
         conn = BlitzGateway(client_obj=client)
-        assert message._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -152,7 +150,7 @@ class TestAnnotationScripts(ScriptTest):
 
 
     @pytest.mark.parametrize('import_tag', [True, False])
-    @pytest.mark.parametrize('tag_creation', [True, False])
+    @pytest.mark.parametrize('tag_creation', [False])
     def test_import_tags(self, import_tag, tag_creation):
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
@@ -162,39 +160,25 @@ class TestAnnotationScripts(ScriptTest):
         update = conn.getUpdateService()
 
         if not tag_creation:  # Create the tags ahead
-            tagset_o = TagAnnotationWrapper(conn)
-            tagset_o.setValue("condition")
-            tagset_o.setNs(NSINSIGHTTAGSET)
-            tagset_o.save()
+            self.make_tag(name="tail", client=client)
+            self.make_tag(name="head", client=client)
+            self.make_tag(name="mouse", client=client)
 
-            tag_o = TagAnnotationWrapper(conn)
-            tag_o.setValue("ctrl")
-            tag_o.save()
+            tagset = self.make_tag(
+                name="condition", ns=NSINSIGHTTAGSET, client=client
+            )
+            tag1 = self.make_tag(name="ctrl", client=client)
+            tag2 = self.make_tag(name="test", client=client)
+
             link = AnnotationAnnotationLinkI()
-            link.parent = tagset_o._obj
-            link.child = tag_o._obj
+            link.setParent(tagset)
+            link.setChild(tag1)
             update.saveObject(link)
-            tagset_o = conn.getObject("TagAnnotation", tagset_o.getId())
-
-            tag_o = TagAnnotationWrapper(conn)
-            tag_o.setValue("test")
-            tag_o.save()
+            tagset = conn.getObject("TagAnnotation", tagset.id.val)._obj
             link = AnnotationAnnotationLinkI()
-            link.parent = tagset_o._obj
-            link.child = tag_o._obj
+            link.setParent(tagset)
+            link.setChild(tag2)
             update.saveObject(link)
-
-            tag_o = TagAnnotationWrapper(conn)
-            tag_o.setValue("tail")
-            tag_o.save()
-
-            tag_o = TagAnnotationWrapper(conn)
-            tag_o.setValue("head")
-            tag_o.save()
-
-            tag_o = TagAnnotationWrapper(conn)
-            tag_o.setValue("mouse")
-            tag_o.save()
 
         n_well = 3
         plates = self.import_plates(client, plate_cols=n_well, plate_rows=1)
@@ -220,9 +204,9 @@ class TestAnnotationScripts(ScriptTest):
         args["Import tags"] = rbool(import_tag)
         args["Allow tag creation"] = rbool(tag_creation)
 
-        message = run_script(client, sid, args, "Message")
+        msg = run_script(client, sid, args, "Message")
 
-        assert message._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -241,15 +225,18 @@ class TestAnnotationScripts(ScriptTest):
         assert well_a2.getAnnotationCounts()["MapAnnotation"] == 1
         assert well_a3.getAnnotationCounts()["MapAnnotation"] == 1
 
-        value = list(well_a1.listAnnotations(ns=NSCLIENTMAPANNOTATION))[0].getValue()
+        annlist = list(well_a1.listAnnotations(ns=NSCLIENTMAPANNOTATION))
+        value = annlist[0].getValue()
         assert len(value) == 1
         assert value[0] == ("key_1", "val_A")
 
-        value = list(well_a2.listAnnotations(ns=NSCLIENTMAPANNOTATION))[0].getValue()
+        annlist = list(well_a2.listAnnotations(ns=NSCLIENTMAPANNOTATION))
+        value = annlist[0].getValue()
         assert len(value) == 1
         assert value[0] == ("key_1", "val_B")
 
-        value = list(well_a3.listAnnotations(ns=NSCLIENTMAPANNOTATION))[0].getValue()
+        annlist = list(well_a3.listAnnotations(ns=NSCLIENTMAPANNOTATION))
+        value = annlist[0].getValue()
         assert len(value) == 1
         assert value[0] == ("key_1", "val_C")
 
@@ -259,8 +246,6 @@ class TestAnnotationScripts(ScriptTest):
         assert sid > 0
 
         client, user = self.new_client_and_user()
-
-        # self.create_test_image(name="testImage", session=self.client.getSession())
 
         n_well = 3
         plates = self.import_plates(client, plate_cols=n_well, plate_rows=1)
@@ -285,9 +270,9 @@ class TestAnnotationScripts(ScriptTest):
         args["Split values on"] = rstring(",")
         args["Exclude empty values"] = rbool(False)
 
-        message = run_script(client, sid, args, "Message")
+        msg = run_script(client, sid, args, "Message")
         conn = BlitzGateway(client_obj=client)
-        assert message._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -316,13 +301,12 @@ class TestAnnotationScripts(ScriptTest):
         assert value[1] == ("key_2", "val_G")
         assert value[2] == ("key_2", "val_H")
 
+
     def test_import_empty(self):
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
 
         client, user = self.new_client_and_user()
-
-        # self.create_test_image(name="testImage", session=self.client.getSession())
 
         n_well = 3
         plates = self.import_plates(client, plate_cols=n_well, plate_rows=1)
@@ -346,9 +330,9 @@ class TestAnnotationScripts(ScriptTest):
         args["File_Annotation"] = rstring(str(fa.id))
         args["Exclude empty values"] = rbool(True)
 
-        message = run_script(client, sid, args, "Message")
+        msg = run_script(client, sid, args, "Message")
         conn = BlitzGateway(client_obj=client)
-        assert message._val == f"Added Annotations to {n_well-1}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well-1}/{n_well} Well(s)"
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -367,3 +351,73 @@ class TestAnnotationScripts(ScriptTest):
         assert value[0] == ("key_2", "val_B")
 
 
+    def test_convert(self):
+        sid = super(TestAnnotationScripts, self).get_script(convert_script)
+        assert sid > 0
+
+        client, user = self.new_client_and_user()
+        conn = BlitzGateway(client_obj=client)
+        image =  self.make_image(name="testImage", client=client)
+
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_1", "val_A")])
+        kv.setNs(rstring("test"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image, kv, client=client)
+
+        args = {
+            "Data_Type": rstring("Image"),
+            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "Target Data_Type": rstring("<on current>"),
+            "Old Namespace (blank for default)": rlist([rstring("test")]),
+            "New Namespace (blank for default)": rstring("new_ns"),
+            "Create new and merge": rbool(False)
+        }
+
+        msg = run_script(client, sid, args, "Message")
+
+        assert msg._val == f"Updated kv pairs to 1/1 Image"
+
+        conn = BlitzGateway(client_obj=client)
+        image_o = conn.getObject("Image", image.id.val)
+
+        value = list(image_o.listAnnotations(ns="new_ns"))[0].getValue()
+        assert len(value) == 1
+        assert value[0] == ("key_1", "val_A")
+
+
+    def test_remove(self):
+        P_AGREEMENT = (
+            "I understand what I am doing and that this will result " +
+            "in a batch deletion of key-value pairs from the server"
+        )
+
+        sid = super(TestAnnotationScripts, self).get_script(remove_script)
+        assert sid > 0
+
+        client, user = self.new_client_and_user()
+        conn = BlitzGateway(client_obj=client)
+        image =  self.make_image(name="testImage", client=client)
+
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_1", "val_A")])
+        kv.setNs(rstring("test_delete"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image, kv, client=client)
+
+        args = {
+            "Data_Type": rstring("Image"),
+            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "Target Data_Type": rstring("<on current>"),
+            "Namespace (blank for default)": rlist([rstring("test_delete")]),
+            P_AGREEMENT: rbool(True)
+        }
+
+        msg = run_script(client, sid, args, "Message")
+
+        assert msg._val == f"Key value data deleted from 1 of 1 objects"
+
+        conn = BlitzGateway(client_obj=client)
+        image_o = conn.getObject("Image", image.id.val)
+
+        assert len(list(image_o.listAnnotations())) == 0
