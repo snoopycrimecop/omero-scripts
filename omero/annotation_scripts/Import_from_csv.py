@@ -410,6 +410,7 @@ def annotate_object(conn, obj, row, header, namespaces,
         kv_list = []
         tag_id_l = []
         for ns, h, r in zip(namespaces, header, row):
+            r = r.strip()
             if ns == curr_ns and (len(r) > 0 or not exclude_empty_value):
                 if h.lower() == "tag":
                     if r == "":
@@ -529,7 +530,7 @@ def preprocess_tag_rows(conn, header, rows, tag_d, tagset_d,
             values = values.split(split_on)
 
             for val in values:
-                val.strip()
+                val = val.strip()
                 # matching a regex to the value
                 re_match = regx_tag.match(val)
                 if re_match is None:
