@@ -352,7 +352,7 @@ def read_csv(conn, original_file, delimiter, import_tags):
 
     try:
         temp_file = provider.get_original_file_data(original_file)
-        with open(temp_file.name, mode="rt", encoding='utf-8') as f:
+        with open(temp_file.name, mode="rt", encoding='utf-8-sig') as f:
             csv_content = f.readlines()
     except UnicodeDecodeError as e:
         assert False, ("Error while reading the csv, convert your " +
