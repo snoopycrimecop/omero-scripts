@@ -66,7 +66,6 @@ P_EXCL_COL = "Columns to exclude"
 P_TARG_COLID = "Target ID colname"
 P_TARG_COLNAME = "Target name colname"
 P_EXCL_EMPTY = "Exclude empty values"
-P_ATTACH = "Attach CSV file"
 P_SPLIT_CELL = "Split values on"
 P_IMPORT_TAGS = "Import tags"
 P_OWN_TAG = "Only use personal tags"
@@ -157,7 +156,6 @@ def main_loop(conn, script_params):
     target_id_colname = script_params[P_TARG_COLID]
     target_name_colname = script_params[P_TARG_COLNAME]
     separator = script_params[P_CSVSEP]
-    attach_file = script_params[P_ATTACH]
     exclude_empty_value = script_params[P_EXCL_EMPTY]
     split_on = script_params[P_SPLIT_CELL]
     use_personal_tags = script_params[P_OWN_TAG]
@@ -180,6 +178,8 @@ def main_loop(conn, script_params):
     source_objects = conn.getObjects(source_type, source_ids)
     for source_object, file_ann_id in zip(source_objects, file_ids):
         ntarget_updated_curr = 0
+
+        # Find the file from the user input
         if file_ann_id is not None:
             file_ann = conn.getObject("Annotation", oid=file_ann_id)
             assert file_ann is not None, f"Annotation {file_ann_id} not found"
@@ -188,18 +188,26 @@ def main_loop(conn, script_params):
                  f"FileAnnotation, not a {file_ann.OMERO_TYPE}")
         else:
             file_ann = get_original_file(source_object)
-        original_file = file_ann.getFile()._obj
 
+        # Get the list of things to annotate
+        is_tag = source_type == "TagAnnotation"
+        target_obj_l = list(target_iterator(conn, source_object,
+                                            target_type, is_tag))
+
+        # Find the most suitable object to link the file to
+        if is_tag and len(target_obj_l) > 0:
+            obj_to_link = target_obj_l[0]
+        else:
+            obj_to_link = source_object
+        link_file_ann(conn, obj_to_link, file_ann)
+
+        original_file = file_ann.getFile()._obj
         rows, header, namespaces = read_csv(conn, original_file,
                                             separator, import_tags)
         if namespace is not None:
             namespaces = [namespace] * len(header)
         elif len(namespaces) == 0:
             namespaces = [NSCLIENTMAPANNOTATION] * len(header)
-
-        is_tag = source_type == "TagAnnotation"
-        target_obj_l = target_iterator(conn, source_object,
-                                       target_type, is_tag)
 
         # Index of the column used to identify the targets. Try for IDs first
         idx_id, idx_name = -1, -1
@@ -296,9 +304,6 @@ def main_loop(conn, script_params):
                 ntarget_updated += 1
                 ntarget_updated_curr += 1
 
-        if ntarget_updated_curr > 0 and attach_file:
-            # Only attaching if this is successful
-            link_file_ann(conn, source_type, source_object, file_ann)
         print("\n------------------------------------\n")
 
     message = (
@@ -616,18 +621,15 @@ def preprocess_tag_rows(conn, header, rows, tag_d, tagset_d,
     return res_rows, tag_d, tagset_d, tagtree_d, tagid_d
 
 
-def link_file_ann(conn, object_type, object_, file_ann):
+def link_file_ann(conn, obj_to_link, file_ann):
     """Link File Annotation to the Object, if not already linked."""
-    # Check for existing links
-    if object_type == "TagAnnotation":
-        print("CSV file cannot be attached to the parent tag")
-        return
     links = list(conn.getAnnotationLinks(
-        object_type, parent_ids=[object_.getId()],
+        obj_to_link.OMERO_CLASS,
+        parent_ids=[obj_to_link.getId()],
         ann_ids=[file_ann.getId()]
-        ))
+    ))
     if len(links) == 0:
-        object_.linkAnnotation(file_ann)
+        obj_to_link.linkAnnotation(file_ann)
 
 
 def run_script():
@@ -752,11 +754,6 @@ def run_script():
                         "ID is provided or  found in the .csv). Matches " +
                         "<NAME> in exclude parameter."),
 
-        scripts.Bool(
-            P_ATTACH, optional=True, grouping="3.7", default=False,
-            description="Attach the given CSV to the selected objects" +
-            "when not already attached to it."),
-
         authors=["Christian Evenhuis", "Tom Boissonnet", "Jens Wendt"],
         institutions=["MIF UTS", "CAi HHU", "MiN WWU"],
         contact="https://forum.image.sc/tag/omero",
@@ -804,7 +801,7 @@ def parameters_parsing(client):
             f"{params['Data_Type']}.")
 
     if params[P_DTYPE] == "Tag":
-        assert None not in params[P_FILE_ANN], \
+        assert params[P_FILE_ANN] is not None, \
             "File annotation ID must be given when using Tag as source"
 
     if ((params[P_FILE_ANN]) is not None
@@ -839,7 +836,7 @@ def parameters_parsing(client):
     print("Input parameters:")
     keys = [P_DTYPE, P_IDS, P_TARG_DTYPE, P_FILE_ANN,
             P_NAMESPACE, P_CSVSEP, P_EXCL_COL, P_TARG_COLID,
-            P_TARG_COLNAME, P_EXCL_EMPTY, P_ATTACH, P_SPLIT_CELL,
+            P_TARG_COLNAME, P_EXCL_EMPTY, P_SPLIT_CELL,
             P_IMPORT_TAGS, P_OWN_TAG, P_ALLOW_NEWTAG]
 
     for k in keys:
