@@ -52,7 +52,6 @@ DEFAULT_IMPORT_ARGS = {
     "Target ID colname": rstring("OBJECT_ID"),
     "Target name colname": rstring("OBJECT_NAME"),
     "Exclude empty values": rbool(False),
-    "Attach CSV file": rbool(False),
     "Import tags": rbool(False),
     "Only use personal tags": rbool(False),
     "Allow tag creation": rbool(False),
