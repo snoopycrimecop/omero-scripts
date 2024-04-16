@@ -25,16 +25,17 @@
 
 from __future__ import print_function
 import omero
-from omero.gateway import BlitzGateway, TagAnnotationWrapper, MapAnnotationWrapper
-from omero.model import AnnotationAnnotationLinkI, ImageAnnotationLinkI, MapAnnotationI
+from omero.gateway import BlitzGateway
+from omero.model import AnnotationAnnotationLinkI, MapAnnotationI
 from omero.constants.metadata import NSCLIENTMAPANNOTATION, NSINSIGHTTAGSET
+from omero.rtypes import rstring, rlist, rbool
+from omero.util.temp_files import create_path
 import omero.scripts
+
 import pytest
 from script import ScriptTest
 from script import run_script
-from omero.cmd import Delete2
-from omero.rtypes import wrap, rstring, rlist, rbool, rlong
-from omero.util.temp_files import create_path
+
 
 import_script = "/omero/annotation_scripts/Import_from_csv.py"
 export_script = "/omero/annotation_scripts/Export_to_csv.py"
@@ -148,7 +149,6 @@ class TestAnnotationScripts(ScriptTest):
         assert value[1] == ("key_2", "val_H")
         assert value[2] == ("key_3", "val_I")
 
-
     @pytest.mark.parametrize('import_tag', [True, False])
     @pytest.mark.parametrize('tag_creation', [False])
     def test_import_tags(self, import_tag, tag_creation):
@@ -240,7 +240,6 @@ class TestAnnotationScripts(ScriptTest):
         assert len(value) == 1
         assert value[0] == ("key_1", "val_C")
 
-
     def test_import_split(self):
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
@@ -301,7 +300,6 @@ class TestAnnotationScripts(ScriptTest):
         assert value[1] == ("key_2", "val_G")
         assert value[2] == ("key_2", "val_H")
 
-
     def test_import_empty(self):
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
@@ -350,14 +348,13 @@ class TestAnnotationScripts(ScriptTest):
         assert len(value) == 1
         assert value[0] == ("key_2", "val_B")
 
-
     def test_convert(self):
         sid = super(TestAnnotationScripts, self).get_script(convert_script)
         assert sid > 0
 
         client, user = self.new_client_and_user()
         conn = BlitzGateway(client_obj=client)
-        image =  self.make_image(name="testImage", client=client)
+        image = self.make_image(name="testImage", client=client)
 
         kv = MapAnnotationI()
         kv.setMapValue([omero.model.NamedValue("key_1", "val_A")])
@@ -376,7 +373,7 @@ class TestAnnotationScripts(ScriptTest):
 
         msg = run_script(client, sid, args, "Message")
 
-        assert msg._val == f"Updated kv pairs to 1/1 Image"
+        assert msg._val == "Updated kv pairs to 1/1 Image"
 
         conn = BlitzGateway(client_obj=client)
         image_o = conn.getObject("Image", image.id.val)
@@ -385,9 +382,8 @@ class TestAnnotationScripts(ScriptTest):
         assert len(value) == 1
         assert value[0] == ("key_1", "val_A")
 
-
     def test_remove(self):
-        P_AGREEMENT = (
+        agreement = (
             "I understand what I am doing and that this will result " +
             "in a batch deletion of key-value pairs from the server"
         )
@@ -397,7 +393,7 @@ class TestAnnotationScripts(ScriptTest):
 
         client, user = self.new_client_and_user()
         conn = BlitzGateway(client_obj=client)
-        image =  self.make_image(name="testImage", client=client)
+        image = self.make_image(name="testImage", client=client)
 
         kv = MapAnnotationI()
         kv.setMapValue([omero.model.NamedValue("key_1", "val_A")])
@@ -410,12 +406,12 @@ class TestAnnotationScripts(ScriptTest):
             "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
             "Target Data_Type": rstring("<on current>"),
             "Namespace (blank for default)": rlist([rstring("test_delete")]),
-            P_AGREEMENT: rbool(True)
+            agreement: rbool(True)
         }
 
         msg = run_script(client, sid, args, "Message")
 
-        assert msg._val == f"Key value data deleted from 1 of 1 objects"
+        assert msg._val == "Key value data deleted from 1 of 1 objects"
 
         conn = BlitzGateway(client_obj=client)
         image_o = conn.getObject("Image", image.id.val)
