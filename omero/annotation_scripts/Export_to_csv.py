@@ -458,11 +458,11 @@ def run_script():
         scripts.List(
             P_IDS, optional=False, grouping="1.1",
             description="List of parent data IDs containing the objects " +
-                        "to delete annotation from.").ofType(rlong(0)),
+                        "to export annotation from.").ofType(rlong(0)),
 
         scripts.String(
             P_TARG_DTYPE, optional=False, grouping="1.2",
-            description="Choose the object type to delete annotation from.",
+            description="Choose the object type to export annotation from.",
             values=target_types, default="<on current>"),
 
         scripts.List(
