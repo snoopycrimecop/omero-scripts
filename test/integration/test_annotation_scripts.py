@@ -381,6 +381,90 @@ class TestAnnotationScripts(ScriptTest):
         assert len(value) == 1
         assert value[0] == ("key_1", "val_A")
 
+    def test_convert_no_merge(self):
+        sid = super(TestAnnotationScripts, self).get_script(convert_script)
+        assert sid > 0
+
+        client, user = self.new_client_and_user()
+        conn = BlitzGateway(client_obj=client)
+        image = self.make_image(name="testImage", client=client)
+
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_1", "val_A")])
+        kv.setNs(rstring("test"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image, kv, client=client)
+
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_2", "val_B")])
+        kv.setNs(rstring("test"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image, kv, client=client)
+
+        args = {
+            "Data_Type": rstring("Image"),
+            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "Target Data_Type": rstring("<on current>"),
+            "Old Namespace (blank for default)": rlist([rstring("test")]),
+            "New Namespace (blank for default)": rstring("new_ns"),
+            "Create new and merge": rbool(False)
+        }
+
+        msg = run_script(client, sid, args, "Message")
+
+        assert msg._val == "Updated kv pairs to 1/1 Image"
+
+        conn = BlitzGateway(client_obj=client)
+        image_o = conn.getObject("Image", image.id.val)
+
+        list_ann = list(image_o.listAnnotations(ns="new_ns"))
+        assert len(list_ann) == 2
+        value = list_ann[0].getValue()
+        assert len(value) == 1
+        value = list_ann[1].getValue()
+        assert len(value) == 1
+
+    def test_convert_merge(self):
+        sid = super(TestAnnotationScripts, self).get_script(convert_script)
+        assert sid > 0
+
+        client, user = self.new_client_and_user()
+        conn = BlitzGateway(client_obj=client)
+        image = self.make_image(name="testImage", client=client)
+
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_1", "val_A")])
+        kv.setNs(rstring("test"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image, kv, client=client)
+
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_2", "val_B")])
+        kv.setNs(rstring("test"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image, kv, client=client)
+
+        args = {
+            "Data_Type": rstring("Image"),
+            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "Target Data_Type": rstring("<on current>"),
+            "Old Namespace (blank for default)": rlist([rstring("test")]),
+            "New Namespace (blank for default)": rstring("new_ns"),
+            "Create new and merge": rbool(True)
+        }
+
+        msg = run_script(client, sid, args, "Message")
+
+        assert msg._val == "Updated kv pairs to 1/1 Image"
+
+        conn = BlitzGateway(client_obj=client)
+        image_o = conn.getObject("Image", image.id.val)
+
+        list_ann = list(image_o.listAnnotations(ns="new_ns"))
+        assert len(list_ann) == 1
+        value = list_ann[0].getValue()
+        assert len(value) == 2
+
     def test_remove(self):
         agreement = (
             "I understand what I am doing and that this will result " +
