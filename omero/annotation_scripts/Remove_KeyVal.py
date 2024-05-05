@@ -197,8 +197,7 @@ def run_script():
     client = scripts.client(
         'Remove Key-Value pairs',
         """
-    This script deletes for the selected objects the key-value pairs
-    associated to the given namespace.
+    Deletes key-value pairs of the selected objects.
     \t
     Check the guide for more information on parameters and errors:
     https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html
@@ -208,26 +207,25 @@ def run_script():
 
         scripts.String(
             P_DTYPE, optional=False, grouping="1",
-            description="Parent-data type of the objects to annotate.",
+            description="Data type of the parent objects.",
             values=source_types, default="Dataset"),
 
         scripts.List(
             P_IDS, optional=False, grouping="1.1",
-            description="List of parent-data IDs containing the objects " +
-                        "to delete annotation from.").ofType(rlong(0)),
+            description="IDs of the parent objects").ofType(rlong(0)),
 
         scripts.String(
             P_TARG_DTYPE, optional=False, grouping="1.2",
-            description="Choose the object type to delete annotation from.",
+            description="Data type to process from the selected " +
+            "parent objects.",
             values=target_types, default="<on current>"),
 
         scripts.List(
             P_NAMESPACE, optional=True,
             grouping="1.3",
-            description="Annotation with these namespace will " +
-                        "be deleted. Default is the client" +
-                        " namespace, meaning editable in " +
-                        "OMERO.web").ofType(rstring("")),
+            description="Namespace(s) of the key-value pairs to " +
+                        "delete. Client namespace by default, " +
+                        "'*' for all.").ofType(rstring("")),
 
         scripts.Bool(
             P_AGREEMENT, optional=True, grouping="2",

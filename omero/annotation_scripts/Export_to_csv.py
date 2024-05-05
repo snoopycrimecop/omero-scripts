@@ -441,8 +441,8 @@ def run_script():
     client = scripts.client(
         'Export to CSV',
         """
-    This script exports for the selected objects their name, IDs and associated
-    tags and key-value pairs.
+    Exports in a CSV the key-value pairs, tags, name and ID
+    of the selected objects.
     \t
     Check the guide for more information on parameters and errors:
     https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html
@@ -452,26 +452,25 @@ def run_script():
 
         scripts.String(
             P_DTYPE, optional=False, grouping="1",
-            description="Parent data type of the objects to annotate.",
+            description="Data type of the parent objects.",
             values=source_types, default="Dataset"),
 
         scripts.List(
             P_IDS, optional=False, grouping="1.1",
-            description="List of parent data IDs containing the objects " +
-                        "to export annotation from.").ofType(rlong(0)),
+            description="IDs of the parent objects").ofType(rlong(0)),
 
         scripts.String(
             P_TARG_DTYPE, optional=False, grouping="1.2",
-            description="Choose the object type to export annotation from.",
+            description="Data type to process from the selected " +
+            "parent objects.",
             values=target_types, default="<on current>"),
 
         scripts.List(
             P_NAMESPACE, optional=True,
             grouping="1.3",
-            description="Namespace(s) to include for the export of key-" +
-                        "value pairs annotations. Default is the client" +
-                        "namespace, meaning editable in " +
-                        "OMERO.web").ofType(rstring("")),
+            description="Namespace(s) of the key-value pairs " +
+                        "to export. Client namespace by default, " +
+                        "'*' for all.").ofType(rstring("")),
 
         scripts.Bool(
             "Other parameters", optional=True, grouping="2", default=True,
@@ -479,25 +478,25 @@ def run_script():
 
         scripts.String(
             P_CSVSEP, optional=False, grouping="2.1",
-            description="Choose the csv separator.",
+            description="Choose the CSV separator.",
             values=separators, default="TAB"),
 
         scripts.Bool(
             P_INCL_PARENT, optional=True,
             grouping="2.2",
-            description="Check to include or not the name of the parent(s)" +
-                        " objects as columns in the csv", default=False),
+            description="Check to include columns for the parent " +
+                        "containers names", default=False),
 
         scripts.Bool(
             P_INCL_NS, optional=True,
             grouping="2.3",
-            description="Check to include the annotation namespaces" +
-                        " in the csv file.", default=False),
+            description="Check to include the namespaces " +
+                        "of the key-value pairs in the CSV.", default=False),
 
         scripts.Bool(
             P_INCL_TAG, optional=True,
             grouping="2.4",
-            description="Check to include tags in the csv file.",
+            description="Check to include tags in the CSV file.",
             default=False),
 
         authors=["Christian Evenhuis", "MIF", "Tom Boissonnet"],

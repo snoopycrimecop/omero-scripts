@@ -227,7 +227,7 @@ def run_script():
     client = scripts.client(
         'Convert Key-Value pairs namespace',
         """
-    This script converts the namespace of key-value pair annotations.
+    Converts the namespace of key-value pairs.
     \t
     Check the guide for more information on parameters and errors:
     https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html
@@ -237,24 +237,24 @@ def run_script():
 
         scripts.String(
             P_DTYPE, optional=False, grouping="1",
-            description="Parent-data type of the objects to annotate.",
+            description="Data type of the parent objects.",
             values=source_types, default="Dataset"),
 
         scripts.List(
             P_IDS, optional=False, grouping="1.1",
-            description="List of parent-data IDs containing the objects " +
-                        "to annotate.").ofType(rlong(0)),
+            description="IDs of the parent objects").ofType(rlong(0)),
 
         scripts.String(
             P_TARG_DTYPE, optional=False, grouping="1.2",
-            description="The data type for which key-value pair annotations " +
-                        "will be converted.",
+            description="Data type to process from the selected " +
+            "parent objects.",
             values=target_types, default="<on current>"),
 
         scripts.List(
             P_OLD_NS, optional=True, grouping="1.4",
-            description="The namespace(s) of the annotations to " +
-                        "group and change.").ofType(rstring("")),
+            description="Namespace(s) of the key-value pairs to " +
+                        "process. Client namespace by default, " +
+                        "'*' for all.").ofType(rstring("")),
 
         scripts.String(
             P_NEW_NS, optional=True, grouping="1.5",
@@ -262,8 +262,8 @@ def run_script():
 
         scripts.Bool(
             P_MERGE, optional=True, grouping="1.6",
-            description="Check to merge selected key-value pairs" +
-                        " into a single new one", default=False),
+            description="Check to merge selected key-value pairs " +
+                        "into a single new one", default=False),
 
         authors=["Tom Boissonnet"],
         institutions=["CAi HHU"],

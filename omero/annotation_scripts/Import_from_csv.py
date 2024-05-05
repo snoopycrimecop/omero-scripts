@@ -654,8 +654,7 @@ def run_script():
     client = scripts.client(
         'Import from CSV',
         """
-    Reads a .csv file to annotate the given objects with tags and
-    key-value pairs.
+    Import key-value pairs and tags from a CSV file.
     \t
     Check the guide for more information on parameters and errors:
     https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html
@@ -665,49 +664,47 @@ def run_script():
 
         scripts.String(
             P_DTYPE, optional=False, grouping="1",
-            description="Parent-data type of the objects to annotate.",
+            description="Data type of the parent objects.",
             values=source_types, default="Dataset"),
 
         scripts.List(
             P_IDS, optional=False, grouping="1.1",
-            description="List of parent-data IDs containing" +
-                        " the objects to annotate.").ofType(rlong(0)),
+            description="IDs of the parent objects").ofType(rlong(0)),
 
         scripts.String(
             P_TARG_DTYPE, optional=False, grouping="1.2",
-            description="The data type which will be annotated. " +
-                        "Entries in the .csv correspond to these objects.",
+            description="Data type to process from the selected " +
+            "parent objects.",
             values=target_types, default="<on current>"),
 
         scripts.String(
             P_FILE_ANN, optional=True, grouping="1.3",
             description="If no file is provided, list of file IDs " +
-                        "containing metadata to populate (must match length" +
-                        " of 'IDs'). If neither, searches the most recently " +
-                        "attached CSV file on each parent object."),
+                        "containing metadata to populate (one per ID). " +
+                        "Otherwise, takes the most recent CSV " +
+                        "on each parent object."),
 
         scripts.String(
             P_NAMESPACE,
             optional=True, grouping="1.4",
-            description="Namespace given to the created key-value " +
-                        "pairs annotations. Default is the client" +
-                        "namespace, meaning editable in OMERO.web"),
+            description="Namespace assigned to the key-value pairs. " +
+                        "Default is the client " +
+                        "namespace (editable in OMERO.web)."),
 
         scripts.Bool(
             P_IMPORT_TAGS, optional=True, grouping="2", default=True,
-            description="Untick this to prevent importing tags specified " +
-                        "in the CSV."),
+            description="Check this box to allow the import of tags."),
 
         scripts.Bool(
             P_OWN_TAG, optional=True, grouping="2.1", default=False,
-            description="Determines if tags of other users in the group" +
-            " can be used on objects.\n Using only personal tags might " +
-            "lead to multiple tags with the same name in one OMERO-group."),
+            description="Restrict the usage of tags to the ones owned " +
+            "by the user. If checked, tags owned by others will not be " +
+            "considered for the creation of new tags."),
 
         scripts.Bool(
             P_ALLOW_NEWTAG, optional=True, grouping="2.2", default=False,
             description="Creates new tags and tagsets if the ones" +
-            " specified in the .csv do not exist."),
+            " specified in the CSV do not exist."),
 
         scripts.Bool(
             "Other parameters", optional=True, grouping="3", default=True,
@@ -715,44 +712,42 @@ def run_script():
 
         scripts.Bool(
             P_EXCL_EMPTY, optional=True, grouping="3.1", default=True,
-            description="Exclude a key-value if the value is empty."),
+            description="Skip the keys with empty values."),
 
         scripts.String(
             P_CSVSEP, optional=True, grouping="3.2",
-            description="The separator used in the .csv file. 'guess' will " +
+            description="Separator used in the CSV file. 'guess' will " +
                         "attempt to detetect automatically which of " +
-                        ",;\\t is used.",
+                        ",;\\t to use.",
             values=separators, default="guess"),
 
         scripts.String(
             P_SPLIT_CELL, optional=True, grouping="3.3",
             default="",
-            description="Split cells according to this into multiple " +
-                        "values for a given key."),
+            description="Separator used to split cells into multiple " +
+                        "key-value pairs."),
 
         scripts.List(
             P_EXCL_COL, optional=True, grouping="3.4",
             default="<ID>,<NAME>,<PARENTS>",
-            description="List of columns in the .csv file to exclude " +
-                        "from the key-value pair import. <ID>" +
-                        " and <NAME> correspond to the two " +
-                        "following parameters. <PARENTS> corresponds " +
-                        "to the six container types.").ofType(rstring("")),
+            description="Columns to exclude from the key-value pairs. " +
+                        "<ID> and <NAME> correspond to the column name " +
+                        "specified by the next two parameters. " +
+                        "<PARENTS> matches all {PROJECT, DATASET, " +
+                        "SCREEN, PLATE, RUN, WELL}.").ofType(rstring("")),
 
         scripts.String(
             P_TARG_COLID, optional=True, grouping="3.5",
             default="OBJECT_ID",
-            description="The column name in the .csv containing the id" +
-                        " of the objects to annotate. " +
-                        "Matches <ID> in exclude parameter."),
+            description="The column name in the CSV containing " +
+                        "the objects IDs."),
 
         scripts.String(
             P_TARG_COLNAME, optional=True, grouping="3.6",
             default="OBJECT_NAME",
-            description="The column name in the .csv containing the name of " +
-                        "the objects to annotate (used if no column " +
-                        "ID is provided or  found in the .csv). Matches " +
-                        "<NAME> in exclude parameter."),
+            description="The column name in the CSV containing " +
+                        "the objects names. (used only if the column " +
+                        "ID is not found"),
 
         authors=["Christian Evenhuis", "Tom Boissonnet", "Jens Wendt"],
         institutions=["MIF UTS", "CAi HHU", "MiN WWU"],
