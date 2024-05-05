@@ -28,9 +28,10 @@ import omero
 from omero.gateway import BlitzGateway
 from omero.model import AnnotationAnnotationLinkI, MapAnnotationI
 from omero.constants.metadata import NSCLIENTMAPANNOTATION, NSINSIGHTTAGSET
-from omero.rtypes import rstring, rlist, rbool
+from omero.rtypes import rstring, rlist, rbool, rlong
 from omero.util.temp_files import create_path
 import omero.scripts
+from script import get_file_contents
 
 import pytest
 from script import ScriptTest
@@ -105,7 +106,7 @@ class TestAnnotationScripts(ScriptTest):
         # run the script
         args = DEFAULT_IMPORT_ARGS.copy()
         args["Data_Type"] = rstring("Plate")
-        args["IDs"] = rlist([omero.rtypes.rlong(plate.id.val)])
+        args["IDs"] = rlist([rlong(plate.id.val)])
         args["Target Data_Type"] = rstring("-- Well")
         args["File_Annotation"] = rstring(str(fa.id))
         args["Import tags"] = rbool(import_tag)
@@ -197,7 +198,7 @@ class TestAnnotationScripts(ScriptTest):
         # run the script
         args = DEFAULT_IMPORT_ARGS.copy()
         args["Data_Type"] = rstring("Plate")
-        args["IDs"] = rlist([omero.rtypes.rlong(plate.id.val)])
+        args["IDs"] = rlist([rlong(plate.id.val)])
         args["Target Data_Type"] = rstring("-- Well")
         args["File_Annotation"] = rstring(str(fa.id))
         args["Import tags"] = rbool(import_tag)
@@ -262,7 +263,7 @@ class TestAnnotationScripts(ScriptTest):
         # run the script
         args = DEFAULT_IMPORT_ARGS.copy()
         args["Data_Type"] = rstring("Plate")
-        args["IDs"] = rlist([omero.rtypes.rlong(plate.id.val)])
+        args["IDs"] = rlist([rlong(plate.id.val)])
         args["Target Data_Type"] = rstring("-- Well")
         args["File_Annotation"] = rstring(str(fa.id))
         args["Split values on"] = rstring(",")
@@ -322,7 +323,7 @@ class TestAnnotationScripts(ScriptTest):
         # run the script
         args = DEFAULT_IMPORT_ARGS.copy()
         args["Data_Type"] = rstring("Plate")
-        args["IDs"] = rlist([omero.rtypes.rlong(plate.id.val)])
+        args["IDs"] = rlist([rlong(plate.id.val)])
         args["Target Data_Type"] = rstring("-- Well")
         args["File_Annotation"] = rstring(str(fa.id))
         args["Exclude empty values"] = rbool(True)
@@ -363,7 +364,7 @@ class TestAnnotationScripts(ScriptTest):
 
         args = {
             "Data_Type": rstring("Image"),
-            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<on current>"),
             "Old Namespace (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
@@ -403,7 +404,7 @@ class TestAnnotationScripts(ScriptTest):
 
         args = {
             "Data_Type": rstring("Image"),
-            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<on current>"),
             "Old Namespace (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
@@ -446,7 +447,7 @@ class TestAnnotationScripts(ScriptTest):
 
         args = {
             "Data_Type": rstring("Image"),
-            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<on current>"),
             "Old Namespace (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
@@ -486,7 +487,7 @@ class TestAnnotationScripts(ScriptTest):
 
         args = {
             "Data_Type": rstring("Image"),
-            "IDs": rlist([omero.rtypes.rlong(image.id.val)]),
+            "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<on current>"),
             "Namespace (blank for default)": rlist([rstring("test_delete")]),
             agreement: rbool(True)
@@ -500,3 +501,157 @@ class TestAnnotationScripts(ScriptTest):
         image_o = conn.getObject("Image", image.id.val)
 
         assert len(list(image_o.listAnnotations())) == 0
+
+    def test_export(self):
+        sid = super(TestAnnotationScripts, self).get_script(export_script)
+        assert sid > 0
+
+        client, user = self.new_client_and_user()
+        conn = BlitzGateway(client_obj=client)
+        image = self.make_image(name="testImage", client=client)
+
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_1", "val_A"),
+                        omero.model.NamedValue("key_2", "val_B")])
+        kv.setNs(rstring("test"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image, kv, client=client)
+
+        args = {
+            "Data_Type": rstring("Image"),
+            "IDs": rlist([rlong(image.id.val)]),
+            "Target Data_Type": rstring("<on current>"),
+            "Namespace (blank for default)": rlist([rstring("test")]),
+            "CSV separator": rstring("TAB"),
+            "Include parent container names": rbool(False),
+            "Include namespace": rbool(False),
+            "Include tags": rbool(False)
+        }
+
+        msg = run_script(client, sid, args, "Message")
+
+        assert msg._val == f"The csv is attached to Image:{image.id.val}"
+
+        conn = BlitzGateway(client_obj=client)
+        img_o = conn.getObject("Image", image.id.val)
+
+        file_ann = img_o.getAnnotation(ns="KeyVal_export")
+        fid = file_ann.getFile().getId()
+        csv_text = get_file_contents(self.new_client(user=user), fid)
+        lines = csv_text.split("\n")
+        assert len(lines) == 3
+        assert lines[-1] == ""  # Last empty line
+        key_l = lines[0].split("\t")
+        assert key_l[0] == "OBJECT_ID"
+        assert key_l[1] == "OBJECT_NAME"
+        assert "key_1" in key_l
+        assert "key_2" in key_l
+
+        img1_l = lines[1].split("\t")
+        assert img1_l[0] == str(image.id.val)
+        assert img1_l[1] == "testImage"
+        assert "val_A" in img1_l
+        assert "val_B" in img1_l
+
+    @pytest.mark.parametrize('same_ns', [True, False])
+    def test_export_all_opt(self, same_ns):
+        sid = super(TestAnnotationScripts, self).get_script(export_script)
+        assert sid > 0
+
+        client, user = self.new_client_and_user()
+        conn = BlitzGateway(client_obj=client)
+        update = conn.getUpdateService()
+
+        # making tags
+        tagset = self.make_tag(
+                name="condition", ns=NSINSIGHTTAGSET, client=client
+            )
+        tag1 = self.make_tag(name="ctrl", client=client)
+        tag2 = self.make_tag(name="test", client=client)
+
+        link = AnnotationAnnotationLinkI()
+        link.setParent(tagset)
+        link.setChild(tag1)
+        update.saveObject(link)
+        tagset = conn.getObject("TagAnnotation", tagset.id.val)._obj
+        link = AnnotationAnnotationLinkI()
+        link.setParent(tagset)
+        link.setChild(tag2)
+        update.saveObject(link)
+
+        image1 = self.make_image(name="testImage1", client=client)
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_1", "val_A"),
+                        omero.model.NamedValue("key_2", "val_B")])
+        kv.setNs(rstring("test"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image1, kv, client=client)
+        self.link(image1, tag1, client=client)
+
+        image2 = self.make_image(name="testImage2", client=client)
+        kv = MapAnnotationI()
+        kv.setMapValue([omero.model.NamedValue("key_1", "val_C"),
+                        omero.model.NamedValue("key_2", "val_D")])
+        if same_ns:
+            kv.setNs(rstring("test"))
+        else:
+            kv.setNs(rstring("other"))
+        kv = client.sf.getUpdateService().saveAndReturnObject(kv)
+        self.link(image2, kv, client=client)
+        self.link(image2, tag2, client=client)
+
+        ns_l = [rstring("test")]
+        if not same_ns:
+            ns_l.append(rstring("other"))
+
+        args = {
+            "Data_Type": rstring("Image"),
+            "IDs": rlist([rlong(image1.id.val), rlong(image2.id.val)]),
+            "Target Data_Type": rstring("<on current>"),
+            "Namespace (blank for default)": rlist(ns_l),
+            "CSV separator": rstring("TAB"),
+            "Include parent container names": rbool(True),
+            "Include namespace": rbool(True),
+            "Include tags": rbool(True)
+        }
+
+        run_script(client, sid, args, "Message")
+
+        conn = BlitzGateway(client_obj=client)
+        img1_o = conn.getObject("Image", image1.id.val)
+        img2_o = conn.getObject("Image", image2.id.val)
+
+        file_ann = img1_o.getAnnotation(ns="KeyVal_export")
+        if file_ann is None:
+            file_ann = img2_o.getAnnotation(ns="KeyVal_export")
+
+        fid = file_ann.getFile().getId()
+        csv_text = get_file_contents(self.new_client(user=user), fid)
+        lines = csv_text.split("\n")
+        assert len(lines) == 5
+        ns_l = lines[0].split("\t")
+        assert ns_l[0] == "NAMESPACE"
+        key_l = lines[1].split("\t")
+        img1_l = lines[2].split("\t")
+        img2_l = lines[3].split("\t")
+        assert len(ns_l) == len(key_l)
+        assert len(key_l) == len(img1_l)
+        assert len(img1_l) == len(img2_l)
+        if same_ns:
+            assert len(key_l) == 5
+            k1_pos = key_l.index("key_1")
+            assert img1_l[k1_pos] == "val_A"
+            assert img2_l[k1_pos] == "val_C"
+            k2_pos = key_l.index("key_2")
+            assert img1_l[k2_pos] == "val_B"
+            assert img2_l[k2_pos] == "val_D"
+        else:
+            assert len(key_l) == 7
+            ns1_pos = ns_l.index("test")
+            ns2_pos = ns_l.index("other")
+            assert img1_l[ns2_pos] == ""
+            assert img2_l[ns1_pos] == ""
+
+        tag_pos = key_l.index("TAG")
+        assert img1_l[tag_pos] == "ctrl[condition]"
+        assert img2_l[tag_pos] == "test[condition]"
