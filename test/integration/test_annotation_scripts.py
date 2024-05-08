@@ -80,6 +80,9 @@ class TestAnnotationScripts(ScriptTest):
     ])
     @pytest.mark.parametrize('ns_in_csv', [True, False])
     def test_import(self, import_tag, tag_creation, ns, ns_in_csv):
+        """
+        Test various import option with a simple CSV
+        """
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
 
@@ -152,6 +155,9 @@ class TestAnnotationScripts(ScriptTest):
     @pytest.mark.parametrize('import_tag', [True, False])
     @pytest.mark.parametrize('tag_creation', [True, False])
     def test_import_tags(self, import_tag, tag_creation):
+        """
+        Test the import of tags from a CSV with tag information
+        """
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
 
@@ -241,6 +247,9 @@ class TestAnnotationScripts(ScriptTest):
         assert value[0] == ("key_1", "val_C")
 
     def test_import_split(self):
+        """
+        Test the import of KV with inner cell splitting
+        """
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
 
@@ -301,6 +310,9 @@ class TestAnnotationScripts(ScriptTest):
         assert value[2] == ("key_2", "val_H")
 
     def test_import_empty(self):
+        """
+        Test the import from a CSV with exclusion of empty cells
+        """
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
 
@@ -349,6 +361,9 @@ class TestAnnotationScripts(ScriptTest):
         assert value[0] == ("key_2", "val_B")
 
     def test_convert(self):
+        """
+        Test the conversion of KV pairs namespace
+        """
         sid = super(TestAnnotationScripts, self).get_script(convert_script)
         assert sid > 0
 
@@ -384,6 +399,10 @@ class TestAnnotationScripts(ScriptTest):
 
     @pytest.mark.parametrize('merge', [True, False])
     def test_convert_no_merge(self, merge):
+        """
+        Test the conversion of KV pairs namespace with different
+        merging options
+        """
         sid = super(TestAnnotationScripts, self).get_script(convert_script)
         assert sid > 0
 
@@ -433,6 +452,11 @@ class TestAnnotationScripts(ScriptTest):
 
     @pytest.mark.parametrize('agree_check', [True, False])
     def test_remove(self, agree_check):
+        """
+        Test the removal of KV pairs, and if the script fails without the
+        agreement checked.
+        """
+
         agreement = (
             "I understand what I am doing and that this will result " +
             "in a batch deletion of key-value pairs from the server"
@@ -460,7 +484,7 @@ class TestAnnotationScripts(ScriptTest):
         }
 
         msg = run_script(client, sid, args, "Message")
-        if not agree_check:  # There should be an AssertionError, returning None
+        if not agree_check:  # should be an AssertionError, returning None
             assert msg is None
         else:
             assert msg._val == "Key value data deleted from 1 of 1 objects"
@@ -469,6 +493,9 @@ class TestAnnotationScripts(ScriptTest):
             assert len(list(image_o.listAnnotations())) == 0
 
     def test_export(self):
+        """
+        Test the export of KV pairs into a CSV
+        """
         sid = super(TestAnnotationScripts, self).get_script(export_script)
         assert sid > 0
 
@@ -521,6 +548,10 @@ class TestAnnotationScripts(ScriptTest):
 
     @pytest.mark.parametrize('same_ns', [True, False])
     def test_export_all_opt(self, same_ns):
+        """
+        Test the export of two KV pairs into a CSV with all options checked
+        (namespace, parent container, tags).
+        """
         sid = super(TestAnnotationScripts, self).get_script(export_script)
         assert sid > 0
 
