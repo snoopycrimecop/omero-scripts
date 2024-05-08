@@ -431,7 +431,8 @@ class TestAnnotationScripts(ScriptTest):
             value = list_ann[0].getValue()
             assert len(value) == 2
 
-    def test_remove(self):
+    @pytest.mark.parametrize('agree_check', [True, False])
+    def test_remove(self, agree_check):
         agreement = (
             "I understand what I am doing and that this will result " +
             "in a batch deletion of key-value pairs from the server"
@@ -455,17 +456,17 @@ class TestAnnotationScripts(ScriptTest):
             "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<on current>"),
             "Namespace (blank for default)": rlist([rstring("test_delete")]),
-            agreement: rbool(True)
+            agreement: rbool(agree_check)
         }
 
         msg = run_script(client, sid, args, "Message")
-
-        assert msg._val == "Key value data deleted from 1 of 1 objects"
-
-        conn = BlitzGateway(client_obj=client)
-        image_o = conn.getObject("Image", image.id.val)
-
-        assert len(list(image_o.listAnnotations())) == 0
+        if not agree_check:  # There should be an AssertionError, returning None
+            assert msg is None
+        else:
+            assert msg._val == "Key value data deleted from 1 of 1 objects"
+            conn = BlitzGateway(client_obj=client)
+            image_o = conn.getObject("Image", image.id.val)
+            assert len(list(image_o.listAnnotations())) == 0
 
     def test_export(self):
         sid = super(TestAnnotationScripts, self).get_script(export_script)
