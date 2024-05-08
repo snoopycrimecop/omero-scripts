@@ -150,7 +150,7 @@ class TestAnnotationScripts(ScriptTest):
         assert value[2] == ("key_3", "val_I")
 
     @pytest.mark.parametrize('import_tag', [True, False])
-    @pytest.mark.parametrize('tag_creation', [False])
+    @pytest.mark.parametrize('tag_creation', [True, False])
     def test_import_tags(self, import_tag, tag_creation):
         sid = super(TestAnnotationScripts, self).get_script(import_script)
         assert sid > 0
