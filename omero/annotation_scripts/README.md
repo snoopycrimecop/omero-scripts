@@ -37,7 +37,7 @@ History
 This repository started as a fork of [evehuis/omero-user-scripts](). Ownership was transferred to @CFGrote after merging a pull request that fixed a number of bugs and
 ported the original code from python2.7 to python3.x
 
-In 2024, the scripts were reworked by Tom Boissonnet and Jens Wendt to extend the annotation to all OMERO objects, and to include a new script to convert namespaces of map annotations.
+In 2024, the scripts were reworked by Tom Boissonnet (HHU Düsseldorf) and Jens Wendt (WWU Münster) to extend the annotation to all OMERO objects, and to include a new script to convert namespaces of map annotations.
 
 
 Contributions
