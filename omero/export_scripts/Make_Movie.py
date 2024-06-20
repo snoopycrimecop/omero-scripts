@@ -48,7 +48,6 @@ from omero.constants.namespaces import NSCREATED
 from omero.constants.metadata import NSMOVIE
 
 from io import BytesIO
-from types import StringTypes
 
 from PIL import Image, ImageDraw
 
@@ -260,7 +259,7 @@ def valid_channels(set, size_c):
     if (len(set) == 0):
         return False
     for val in set:
-        if isinstance(val, StringTypes):
+        if isinstance(val, str):
             val = int(val.split('|')[0].split('$')[0])
         if (val < 0 or val > size_c):
             return False
