@@ -364,6 +364,14 @@ def read_csv(conn, original_file, delimiter, import_tags):
                        "file to utf-8 encoding" +
                        str(e))
 
+    # Read delimiter from CSV first line if exist
+    re_delimiter = re.compile("sep=(?P<delimiter>.?)")
+    match = re_delimiter.match(csv_content[0])
+    if match:  # Need to discard first row
+        csv_content = csv_content[1:]
+        if delimiter is None:  # (and we detect delimiter if not given)
+            delimiter = match.group('delimiter')
+
     if delimiter is None:
         try:
             # Sniffing on a maximum of four lines
