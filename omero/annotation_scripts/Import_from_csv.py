@@ -376,7 +376,7 @@ def read_csv(conn, original_file, delimiter, import_tags):
         try:
             # Sniffing on a maximum of four lines
             delimiter = csv.Sniffer().sniff("\n".join(csv_content[:4]),
-                                            ",;\t").delimiter
+                                            "|,;\t").delimiter
         except Exception as e:
             assert False, ("Failed to sniff CSV delimiter: " + str(e))
     rows = list(csv.reader(csv_content, delimiter=delimiter))

@@ -439,7 +439,7 @@ def run_script():
                     rstring("--- Image")
     ]
 
-    separators = [";", ",", "TAB"]
+    separators = [";", ",", "TAB", "|"]
     # Here we define the script name and description.
     # Good practice to put url here to give users more guidance on how to run
     # your script.
