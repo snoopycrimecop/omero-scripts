@@ -263,7 +263,9 @@ def run_script():
         scripts.Bool(
             P_MERGE, optional=True, grouping="1.6",
             description="Check to merge selected key-value pairs " +
-                        "into a single new one", default=False),
+                        "into a single new one (will also include " +
+                        "existing key-value pairs having the New Namespace)",
+                        default=False),
 
         authors=["Tom Boissonnet"],
         institutions=["CAi HHU"],
@@ -321,6 +323,9 @@ def parameters_parsing(client):
     if params[P_TARG_DTYPE] == "Acquisition":
         params[P_TARG_DTYPE] = "PlateAcquisition"
 
+    if params[P_MERGE]:
+        # If merge, also include existing target NS
+        params[P_OLD_NS].append(params[P_NEW_NS])
     # Remove duplicate entries from namespace list
     tmp = params[P_OLD_NS]
     if "*" in tmp:
