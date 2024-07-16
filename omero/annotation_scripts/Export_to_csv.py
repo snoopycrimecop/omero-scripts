@@ -32,6 +32,7 @@ import omero.scripts as scripts
 import tempfile
 import os
 import re
+import csv
 from collections import OrderedDict, defaultdict
 
 CHILD_OBJECTS = {
@@ -391,10 +392,14 @@ def attach_csv(conn, obj_, rows, separator, csv_name):
     # create the tmp directory
     tmp_dir = tempfile.mkdtemp(prefix='MIF_meta')
     (fd, tmp_file) = tempfile.mkstemp(dir=tmp_dir, text=True)
-    tfile = os.fdopen(fd, 'w', encoding="utf-8")
-    for row in rows:
-        tfile.write(f"{separator.join(row)}\n")
-    tfile.close()
+    with os.fdopen(fd, 'w', encoding="utf-8") as tfile:
+        tfile.write(f"sep={separator}\r\n")  # Indicates separator for excel
+        csvwriter = csv.writer(tfile,
+                               delimiter=separator,
+                               quotechar='"',
+                               quoting=csv.QUOTE_MINIMAL)
+        for row in rows:
+            csvwriter.writerow(row)
 
     # link it to the object
     file_ann = conn.createFileAnnfromLocalFile(
