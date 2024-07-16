@@ -532,6 +532,7 @@ class TestAnnotationScripts(ScriptTest):
         fid = file_ann.getFile().getId()
         csv_text = get_file_contents(self.new_client(user=user), fid)
         lines = csv_text.split("\n")
+        lines = lines[1:]  # Ignore sep= metadata
         assert len(lines) == 3
         assert lines[-1] == ""  # Last empty line
         key_l = lines[0].split("\t")
@@ -625,6 +626,7 @@ class TestAnnotationScripts(ScriptTest):
         fid = file_ann.getFile().getId()
         csv_text = get_file_contents(self.new_client(user=user), fid)
         lines = csv_text.split("\n")
+        lines = lines[1:]  # Ignore sep= metadata
         assert len(lines) == 5
         ns_l = lines[0].split("\t")
         assert ns_l[0] == "NAMESPACE"
