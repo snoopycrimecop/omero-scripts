@@ -393,11 +393,12 @@ def attach_csv(conn, obj_, rows, separator, csv_name):
     tmp_dir = tempfile.mkdtemp(prefix='MIF_meta')
     (fd, tmp_file) = tempfile.mkstemp(dir=tmp_dir, text=True)
     with os.fdopen(fd, 'w', encoding="utf-8") as tfile:
-        tfile.write(f"sep={separator}\r\n")  # Indicates separator for excel
+        tfile.write(f"sep={separator}\n")  # Indicates separator for excel
         csvwriter = csv.writer(tfile,
                                delimiter=separator,
                                quotechar='"',
-                               quoting=csv.QUOTE_MINIMAL)
+                               quoting=csv.QUOTE_MINIMAL,
+                               lineterminator="\n")
         for row in rows:
             csvwriter.writerow(row)
 
