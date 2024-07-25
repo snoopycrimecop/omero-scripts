@@ -105,4 +105,4 @@ The CI pipeline will automatically deploy the tag onto PyPI.
 Copyright
 =========
 
-2010-2021, The Open Microscopy Environment
+2010-2024, The Open Microscopy Environment
