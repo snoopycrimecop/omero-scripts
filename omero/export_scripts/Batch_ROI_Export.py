@@ -43,8 +43,8 @@ def log(data):
 
 def is_big_image(image):
     """Return True if image is tiled."""
-    maxSize = image._conn.getMaxPlaneSize()
-    return (image.getSizeX() * image.getSizeY()) > (maxSize[0] * maxSize[1])
+    max_size = image._conn.getMaxPlaneSize()
+    return (image.getSizeX() * image.getSizeY()) > (max_size[0] * max_size[1])
 
 
 def get_export_data(conn, script_params, image, units=None):
