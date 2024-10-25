@@ -41,6 +41,12 @@ def log(data):
     print(data)
 
 
+def is_big_image(image):
+    """Return True if image is tiled."""
+    max_size = image._conn.getMaxPlaneSize()
+    return (image.getSizeX() * image.getSizeY()) > (max_size[0] * max_size[1])
+
+
 def get_export_data(conn, script_params, image, units=None):
     """Get pixel data for shapes on image and returns list of dicts."""
     log("Image ID %s..." % image.id)
@@ -58,6 +64,7 @@ def get_export_data(conn, script_params, image, units=None):
     all_planes = script_params["Export_All_Planes"]
     include_points = script_params.get("Include_Points_Coords", False)
     size_c = image.getSizeC()
+    big_image = is_big_image(image)
     # Channels index
     channels = script_params.get("Channels", [1])
     ch_indexes = []
@@ -110,7 +117,7 @@ def get_export_data(conn, script_params, image, units=None):
             # get pixel intensities
             for z in z_indexes:
                 for t in t_indexes:
-                    if z is None or t is None:
+                    if z is None or t is None or big_image:
                         stats = None
                     else:
                         stats = roi_service.getShapeStatsRestricted(
