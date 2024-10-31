@@ -58,6 +58,18 @@ P_MERGE = "Create new and merge"
 
 
 def get_children_recursive(source_object, target_type):
+    """
+    Recursively retrieve child objects of a specified type from a source
+    OMERO object.
+
+    :param source_object: The OMERO source object from which child objects
+        are retrieved.
+    :type source_object: omero.model.<ObjectType>
+    :param target_type: The OMERO object type to be retrieved as children.
+    :type target_type: str
+    :return: A list of child objects of the specified target type.
+    :rtype: list
+    """
     if CHILD_OBJECTS[source_object.OMERO_CLASS] == target_type:
         # Stop condition, we return the source_obj children
         if source_object.OMERO_CLASS != "WellSample":
@@ -73,6 +85,21 @@ def get_children_recursive(source_object, target_type):
 
 
 def target_iterator(conn, source_object, target_type, is_tag):
+    """
+    Iterate over and yield target objects of a specified type from a source
+    OMERO object.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param source_object: Source OMERO object to iterate over.
+    :type source_object: omero.model.<ObjectType>
+    :param target_type: Target object type to retrieve.
+    :type target_type: str
+    :param is_tag: Flag indicating if the source object is a tag.
+    :type is_tag: bool
+    :yield: Target objects of the specified type.
+    :rtype: omero.model.<ObjectType>
+    """
     if target_type == source_object.OMERO_CLASS:
         target_obj_l = [source_object]
     elif source_object.OMERO_CLASS == "PlateAcquisition":
@@ -114,12 +141,19 @@ def target_iterator(conn, source_object, target_type, is_tag):
 
 def main_loop(conn, script_params):
     """
-    For every object:
-     - Find annotations in the namespace
-     - If merge:
-        - Remove annotations with old namespace
-        - Create a merged annotation with new namespace
-     - Else change the namespace of the annotation (default)
+    Process OMERO objects, updating or merging namespaces of key-value
+    annotations.
+
+    This function iterates over objects, identifies annotations with specified
+    namespaces, and either updates or merges them according to provided
+    parameters.
+
+    :param conn: OMERO connection object for database operations.
+    :type conn: omero.gateway.BlitzGateway
+    :param script_params: Dictionary of parameters required by the script.
+    :type script_params: dict
+    :return: Summary message indicating update counts, and the result object.
+    :rtype: tuple
     """
     source_type = script_params[P_DTYPE]
     target_type = script_params[P_TARG_DTYPE]
@@ -168,6 +202,18 @@ def main_loop(conn, script_params):
 
 
 def get_existing_map_annotations(obj, namespace_l):
+    """
+    Retrieve existing map annotations with specified namespaces from an
+    OMERO object.
+
+    :param obj: OMERO object from which annotations are retrieved.
+    :type obj: omero.model.<ObjectType>
+    :param namespace_l: List of namespaces used to filter annotations.
+    :type namespace_l: list of str
+    :return: A tuple containing a list of key-value pairs and a list of map
+        annotation objects.
+    :rtype: tuple
+    """
     keyval_l, ann_l = [], []
     forbidden_deletion = []
     for namespace in namespace_l:
@@ -186,6 +232,16 @@ def get_existing_map_annotations(obj, namespace_l):
 
 
 def remove_map_annotations(conn, ann_l):
+    """
+    Delete specified map annotations from OMERO.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param ann_l: List of map annotation objects to delete.
+    :type ann_l: list of omero.model.MapAnnotationWrapper
+    :return: Returns 1 if deletion succeeds, otherwise 0.
+    :rtype: int
+    """
     mapann_ids = [ann.id for ann in ann_l]
 
     if len(mapann_ids) == 0:
@@ -200,7 +256,21 @@ def remove_map_annotations(conn, ann_l):
 
 
 def annotate_object(conn, obj, kv_list, namespace):
+    """
+    Create a new map annotation with specified key-value pairs on an
+    OMERO object.
 
+    :param conn: OMERO connection object for annotation.
+    :type conn: omero.gateway.BlitzGateway
+    :param obj: OMERO object to annotate.
+    :type obj: omero.model.<ObjectType>
+    :param kv_list: Key-value pairs to include in the annotation.
+    :type kv_list: list of tuples
+    :param namespace: Namespace for the new annotation.
+    :type namespace: str
+    :return: The annotation is linked to the object within the OMERO database.
+    :rtype: None
+    """
     map_ann = omero.gateway.MapAnnotationWrapper(conn)
     map_ann.setNs(namespace)
     map_ann.setValue(kv_list)
@@ -211,6 +281,19 @@ def annotate_object(conn, obj, kv_list, namespace):
 
 
 def run_script():
+    """
+    Execute the OMERO script to convert namespaces for key-value pair
+    annotations.
+
+    This function initializes the script parameters, processes input from the
+    OMERO client, and orchestrates the execution of the main script logic,
+    including handling target data types and merging annotations.
+
+    :param None: This function does not take any parameters.
+    :return: This function does not return a value; it sets outputs directly to
+        the client.
+    :rtype: None
+    """
     # Cannot add fancy layout if we want auto fill and selct of object ID
     source_types = [
                     rstring("Project"), rstring("Dataset"), rstring("Image"),
@@ -306,6 +389,17 @@ def run_script():
 
 
 def parameters_parsing(client):
+    """
+    Parse input parameters from the OMERO client, establishing defaults and
+    validating specific combinations for data types and namespaces.
+
+    :param client: The OMERO client object from which input parameters are
+    retrieved.
+    :type client: omero.gateway.BlitzGateway
+    :return: A dictionary of parsed parameters, including validated and default
+        values for processing the script logic.
+    :rtype: dict
+    """
     params = {}
     # Param dict with defaults for optional parameters
     params[P_OLD_NS] = [NSCLIENTMAPANNOTATION]

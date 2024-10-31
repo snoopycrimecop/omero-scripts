@@ -61,6 +61,18 @@ P_AGREEMENT = ("I understand what I am doing and that this will result " +
 
 
 def get_children_recursive(source_object, target_type):
+    """
+    Recursively retrieve child objects of a specified type from a source
+    OMERO object.
+
+    :param source_object: The OMERO source object from which child objects
+    are retrieved.
+    :type source_object: omero.model.<ObjectType>
+    :param target_type: The OMERO object type to be retrieved as children.
+    :type target_type: str
+    :return: A list of child objects of the specified target type.
+    :rtype: list
+    """
     if CHILD_OBJECTS[source_object.OMERO_CLASS] == target_type:
         # Stop condition, we return the source_obj children
         if source_object.OMERO_CLASS != "WellSample":
@@ -76,6 +88,21 @@ def get_children_recursive(source_object, target_type):
 
 
 def target_iterator(conn, source_object, target_type, is_tag):
+    """
+    Iterate over and yield target objects of a specified type from a source
+    OMERO object.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param source_object: Source OMERO object to iterate over.
+    :type source_object: omero.model.<ObjectType>
+    :param target_type: Target object type to retrieve.
+    :type target_type: str
+    :param is_tag: Flag indicating if the source object is a tag.
+    :type is_tag: bool
+    :yield: Target objects of the specified type.
+    :rtype: omero.model.<ObjectType>
+    """
     if target_type == source_object.OMERO_CLASS:
         target_obj_l = [source_object]
     elif source_object.OMERO_CLASS == "PlateAcquisition":
@@ -117,8 +144,18 @@ def target_iterator(conn, source_object, target_type, is_tag):
 
 def main_loop(conn, script_params):
     """
-    For every object:
-     - Find annotations in the namespace and remove
+    Iterates through specified OMERO objects and removes key-value pair
+    annotations
+    within given namespaces.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param script_params: Dictionary of script parameters including source data
+        type, target data type, object IDs, and namespace list.
+    :type script_params: dict
+    :return: Message indicating the success of the deletions, and the result
+        object if any annotation was removed.
+    :rtype: tuple
     """
     source_type = script_params[P_DTYPE]
     target_type = script_params[P_TARG_DTYPE]
@@ -148,6 +185,20 @@ def main_loop(conn, script_params):
 
 
 def remove_map_annotations(conn, obj, namespace_l):
+    """
+    Deletes map annotations within the specified namespaces from an
+    OMERO object.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param obj: OMERO object from which map annotations will be removed.
+    :type obj: omero.model.<ObjectType>
+    :param namespace_l: List of namespaces to remove annotations from; '*'
+        denotes all namespaces.
+    :type namespace_l: list
+    :return: 1 if annotations were successfully deleted, 0 otherwise.
+    :rtype: int
+    """
     mapann_ids = []
     forbidden_deletion = []
     for namespace in namespace_l:
@@ -175,10 +226,12 @@ def remove_map_annotations(conn, obj, namespace_l):
 
 def run_script():
     """
-    The main entry point of the script, as called by the client via the
-    scripting service, passing the required parameters.
-    """
+    Main entry point, called by the client to initiate the script, collect
+    parameters, and execute annotation deletion based on user input.
 
+    :return: Sets output messages and result objects for OMERO client session.
+    :rtype: None
+    """
     # Cannot add fancy layout if we want auto fill and selct of object ID
     source_types = [
                     rstring("Project"), rstring("Dataset"), rstring("Image"),
@@ -270,6 +323,15 @@ def run_script():
 
 
 def parameters_parsing(client):
+    """
+    Parses and validates input parameters from the client, with defaults for
+    optional inputs.
+
+    :param client: Script client used to obtain input parameters.
+    :type client: omero.scripts.ScriptClient
+    :return: Dictionary of parsed parameters, ready for processing.
+    :rtype: dict
+    """
     params = {}
     # Param dict with defaults for optional parameters
     params[P_NAMESPACE] = [NSCLIENTMAPANNOTATION]

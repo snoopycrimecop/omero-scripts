@@ -79,6 +79,18 @@ def get_obj_name(omero_obj):
 
 
 def get_children_recursive(source_object, target_type):
+    """
+    Recursively retrieve child objects of a specified type from a source
+    OMERO object.
+
+    :param source_object: The OMERO source object from which child objects
+    are retrieved.
+    :type source_object: omero.model.<ObjectType>
+    :param target_type: The OMERO object type to be retrieved as children.
+    :type target_type: str
+    :return: A list of child objects of the specified target type.
+    :rtype: list
+    """
     if CHILD_OBJECTS[source_object.OMERO_CLASS] == target_type:
         # Stop condition, we return the source_obj children
         if source_object.OMERO_CLASS != "WellSample":
@@ -94,6 +106,21 @@ def get_children_recursive(source_object, target_type):
 
 
 def target_iterator(conn, source_object, target_type, is_tag):
+    """
+    Iterate over and yield target objects of a specified type from a source
+    OMERO object.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param source_object: Source OMERO object to iterate over.
+    :type source_object: omero.model.<ObjectType>
+    :param target_type: Target object type to retrieve.
+    :type target_type: str
+    :param is_tag: Flag indicating if the source object is a tag.
+    :type is_tag: bool
+    :yield: Target objects of the specified type.
+    :rtype: omero.model.<ObjectType>
+    """
     if target_type == source_object.OMERO_CLASS:
         target_obj_l = [source_object]
     elif source_object.OMERO_CLASS == "PlateAcquisition":
@@ -135,13 +162,23 @@ def target_iterator(conn, source_object, target_type, is_tag):
 
 def main_loop(conn, script_params):
     """
-    For every object:
-     - Find annotations in the namespace and gather in a dict
-     - (opt) Gather ancestry
-    Finalize:
-     - Group all annotations together
-     - Sort rows (useful for wells)
-     - Write a single CSV file
+    Main loop to process each object, gathering annotations, ancestry,
+    and writing to a single CSV file.
+
+    Final steps:
+    - Combine all annotations into a single structure.
+    - Sort rows for better organization.
+    - Write the collected data to a single CSV file.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param script_params: Dictionary of script parameters including data types,
+        IDs, namespaces, and flags for options like including ancestry and
+        tags.
+    :type script_params: dict
+    :return: Message regarding CSV attachment status, file annotation, and
+        result object.
+    :rtype: tuple
     """
     source_type = script_params[P_DTYPE]
     target_type = script_params[P_TARG_DTYPE]
@@ -237,6 +274,14 @@ def main_loop(conn, script_params):
 
 
 def get_all_tags(conn):
+    """
+    Retrieves all tag annotations and tagsets from OMERO.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :return: Dictionary mapping tag IDs to tag names or tagset names.
+    :rtype: dict
+    """
     all_tag_d = {}
     for tag in conn.getObjects("TagAnnotation"):
 
@@ -257,7 +302,17 @@ def get_all_tags(conn):
 
 
 def get_existing_map_annotations(obj, namespace):
-    "Return list of KV with updated keys with NS and occurences"
+    """
+    Retrieves existing key-value pair annotations from an OMERO object.
+
+    :param obj: OMERO object to retrieve annotations from.
+    :type obj: omero.model.<ObjectType>
+    :param namespace: Specific namespace of annotations to retrieve; '*'
+        retrieves all.
+    :type namespace: str
+    :return: List of MapAnnotationWrapper objects for the specified namespace.
+    :rtype: list
+    """
     annotation_l = []
     p = {} if namespace == "*" else {"ns": namespace}
     for ann in obj.listAnnotations(**p):
@@ -267,7 +322,16 @@ def get_existing_map_annotations(obj, namespace):
 
 
 def get_existing_tag_annotations(obj, all_tag_d):
-    "Return list of tag names with tagset if any"
+    """
+    Retrieves existing tag annotations from an OMERO object.
+
+    :param obj: OMERO object to retrieve tags from.
+    :type obj: omero.model.<ObjectType>
+    :param all_tag_d: Dictionary of all tags with tagset names, if applicable.
+    :type all_tag_d: dict
+    :return: List of tag names associated with the specified OMERO object.
+    :rtype: list
+    """
     annotation_l = []
     for ann in obj.listAnnotations():
         if (isinstance(ann, omero.gateway.TagAnnotationWrapper)
@@ -277,6 +341,20 @@ def get_existing_tag_annotations(obj, all_tag_d):
 
 
 def build_rows(annotation_dict_l, tagannotation_l, include_namespace):
+    """
+    Constructs rows for CSV export by organizing annotations and tags.
+
+    :param annotation_dict_l: Dictionary of annotations organized by namespace.
+    :type annotation_dict_l: defaultdict(list)
+    :param tagannotation_l: List of tag annotations.
+    :type tagannotation_l: list
+    :param include_namespace: Flag indicating if namespace should be included
+        in the CSV.
+    :type include_namespace: bool
+    :return: Tuple containing namespace row, header row, and data rows for
+        the CSV.
+    :rtype: tuple
+    """
     ns_row = []
     if include_namespace:
         header_row, rows = [], [[] for i in range(len(annotation_dict_l[0]))]
@@ -304,7 +382,16 @@ def build_rows(annotation_dict_l, tagannotation_l, include_namespace):
 
 
 def group_keyvalues(objannotation_l):
-    """ Groups the keys and values of each object into a single dictionary """
+    """
+    Groups key-value pairs of each object into a unified structure for
+    CSV export.
+
+    :param objannotation_l: List of object annotations to be grouped.
+    :type objannotation_l: list
+    :return: Tuple containing the header row and data rows for each object's
+        annotations.
+    :rtype: tuple
+    """
     header_row = OrderedDict()  # To keep the keys in order
     keyval_obj_l = []
     for ann_l in objannotation_l:
@@ -334,6 +421,26 @@ def group_keyvalues(objannotation_l):
 
 def sort_concat_rows(ns_row, header_row, rows, obj_id_l,
                      obj_name_l, obj_ancestry_l):
+    """
+    Sorts and concatenates rows, including object IDs, names, and ancestry
+    if applicable.
+
+    :param ns_row: Namespace row for CSV.
+    :type ns_row: list
+    :param header_row: Column headers for CSV.
+    :type header_row: list
+    :param rows: Data rows for CSV.
+    :type rows: list
+    :param obj_id_l: List of object IDs.
+    :type obj_id_l: list
+    :param obj_name_l: List of object names.
+    :type obj_name_l: list
+    :param obj_ancestry_l: List of ancestry details for each object.
+    :type obj_ancestry_l: list
+    :return: Tuple containing updated namespace row, header row, and sorted
+        data rows.
+    :rtype: tuple
+    """
     def convert(text):
         return int(text) if text.isdigit() else text.lower()
 
@@ -387,6 +494,22 @@ def sort_concat_rows(ns_row, header_row, rows, obj_id_l,
 
 
 def attach_csv(conn, obj_, rows, separator, csv_name):
+    """
+    Attaches a generated CSV file to an OMERO object.
+
+    :param conn: OMERO connection for server interaction.
+    :type conn: omero.gateway.BlitzGateway
+    :param obj_: OMERO object to which the CSV file will be attached.
+    :type obj_: omero.model.<ObjectType>
+    :param rows: Data rows to write into the CSV.
+    :type rows: list
+    :param separator: Separator character for CSV file.
+    :type separator: str
+    :param csv_name: Name for the generated CSV file.
+    :type csv_name: str
+    :return: File annotation object if the file is attached, None otherwise.
+    :rtype: omero.model.FileAnnotation
+    """
     if not obj_.canAnnotate() and WEBCLIENT_URL == "":
         for row in rows:
             print(f"{separator.join(row)}")
@@ -423,8 +546,13 @@ def attach_csv(conn, obj_, rows, separator, csv_name):
 
 def run_script():
     """
-    The main entry point of the script, as called by the client via the
-    scripting service, passing the required parameters.
+    Entry point for the script, called by the client.
+
+    Sets up and executes the main loop based on user-defined parameters,
+    and generates output message or URL for the CSV file download.
+
+    :return: Sets output messages and result objects for OMERO client session.
+    :rtype: None
     """
 
     # Cannot add fancy layout if we want auto fill and selct of object ID
@@ -547,6 +675,15 @@ def run_script():
 
 
 def parameters_parsing(client):
+    """
+    Parses and validates input parameters from the client.
+
+    :param client: Script client used to obtain input parameters.
+    :type client: omero.scripts.ScriptClient
+    :return: Parsed parameters dictionary with defaults for unspecified
+        options.
+    :rtype: dict
+    """
     params = {}
     # Param dict with defaults for optional parameters
     params[P_NAMESPACE] = [NSCLIENTMAPANNOTATION]
