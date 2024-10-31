@@ -98,7 +98,10 @@ def target_iterator(conn, source_object, target_type, is_tag):
                                                     [source_object.getId()])
         # Need that to load objects
         obj_ids = [o.getId() for o in target_obj_l]
-        target_obj_l = list(conn.getObjects(target_type, obj_ids))
+        if len(obj_ids) > 0:
+            target_obj_l = list(conn.getObjects(target_type, obj_ids))
+        else:
+            target_obj_l = []
     else:
         target_obj_l = get_children_recursive(source_object,
                                               target_type)
@@ -158,7 +161,7 @@ def main_loop(conn, script_params):
         print("\n------------------------------------\n")
     message = (
         "Updated kv pairs to " +
-        f"{ntarget_updated}/{ntarget_processed} {target_type}"
+        f"{ntarget_updated}/{ntarget_processed} {target_type}."
     )
 
     return message, result_obj
@@ -217,11 +220,11 @@ def run_script():
 
     # Duplicate Image for UI, but not a problem for script
     target_types = [
-                    rstring("<on current>"), rstring("Project"),
+                    rstring("<selected>"), rstring("Project"),
                     rstring("- Dataset"), rstring("-- Image"),
                     rstring("Screen"), rstring("- Plate"),
                     rstring("-- Well"), rstring("-- Acquisition"),
-                    rstring("--- Image")
+                    rstring("--- Image"), rstring("<all (from selected)>")
     ]
 
     client = scripts.client(
@@ -248,7 +251,7 @@ def run_script():
             P_TARG_DTYPE, optional=False, grouping="1.2",
             description="Data type to process from the selected " +
             "parent objects.",
-            values=target_types, default="<on current>"),
+            values=target_types, default="<selected>"),
 
         scripts.List(
             P_OLD_NS, optional=True, grouping="1.4",
@@ -283,8 +286,13 @@ def run_script():
 
         # wrap client to use the Blitz Gateway
         conn = BlitzGateway(client_obj=client)
-        message, robj = main_loop(conn, params)
-        client.setOutput("Message", rstring(message))
+        messages = []
+        targets = params[P_TARG_DTYPE]
+        for target in targets:  # Loop on target, use case of process all
+            params[P_TARG_DTYPE] = target
+            message, robj = main_loop(conn, params)
+            messages.append(message)
+        client.setOutput("Message", rstring(" ".join(messages)))
         if robj is not None:
             client.setOutput("Result", robject(robj._obj))
 
@@ -307,21 +315,27 @@ def parameters_parsing(client):
         if client.getInput(key):
             params[key] = client.getInput(key, unwrap=True)
 
-    if params[P_TARG_DTYPE] == "<on current>":
+    if params[P_TARG_DTYPE] == "<selected>":
         params[P_TARG_DTYPE] = params[P_DTYPE]
-    elif " " in params[P_TARG_DTYPE]:
-        # Getting rid of the trailing '---' added for the UI
+    elif params[P_TARG_DTYPE].startswith("-"):
+        # Getting rid of any trailing '--- ' added for the UI
         params[P_TARG_DTYPE] = params[P_TARG_DTYPE].split(" ")[1]
 
-    assert params[P_TARG_DTYPE] in ALLOWED_PARAM[params[P_DTYPE]], \
-           (f"{params['Target Data_Type']} is not a valid target for " +
-            f"{params['Data_Type']}.")
+    if params[P_TARG_DTYPE] != "<all (from selected)>":
+        assert params[P_TARG_DTYPE] in ALLOWED_PARAM[params[P_DTYPE]], \
+            (f"{params['Target Data_Type']} is not a valid target for " +
+             f"{params['Data_Type']}.")
+
+    if params[P_TARG_DTYPE] == "<all (from selected)>":
+        params[P_TARG_DTYPE] = ALLOWED_PARAM[params[P_DTYPE]]
+    else:
+        # Convert to list for iteration over single element
+        params[P_TARG_DTYPE] = [params[P_TARG_DTYPE]]
+    params[P_TARG_DTYPE] = ["PlateAcquisition" if el == "Acquisition" else el
+                            for el in params[P_TARG_DTYPE]]
 
     if params[P_DTYPE] == "Tag":
         params[P_DTYPE] = "TagAnnotation"
-
-    if params[P_TARG_DTYPE] == "Acquisition":
-        params[P_TARG_DTYPE] = "PlateAcquisition"
 
     if params[P_MERGE]:
         # If merge, also include existing target NS

@@ -121,7 +121,10 @@ def target_iterator(conn, source_object, target_type, is_tag):
                                                     [source_object.getId()])
         # Need that to load objects
         obj_ids = [o.getId() for o in target_obj_l]
-        target_obj_l = list(conn.getObjects(target_type, obj_ids))
+        if len(obj_ids) > 0:
+            target_obj_l = list(conn.getObjects(target_type, obj_ids))
+        else:
+            target_obj_l = []
     else:
         target_obj_l = get_children_recursive(source_object,
                                               target_type)
@@ -308,7 +311,7 @@ def main_loop(conn, script_params):
 
     message = (
         "Added Annotations to " +
-        f"{ntarget_updated}/{ntarget_processed} {target_type}(s)"
+        f"{ntarget_updated}/{ntarget_processed} {target_type}(s)."
     )
 
     if file_ann_multiplied and len(missing_names) > 0:
@@ -650,7 +653,7 @@ def run_script():
 
     # Duplicate Image for UI, but not a problem for script
     target_types = [
-                    rstring("<on current>"), rstring("Project"),
+                    rstring("<selected>"), rstring("Project"),
                     rstring("- Dataset"), rstring("-- Image"),
                     rstring("Screen"), rstring("- Plate"),
                     rstring("-- Well"), rstring("-- Acquisition"),
@@ -683,7 +686,7 @@ def run_script():
             P_TARG_DTYPE, optional=False, grouping="1.2",
             description="Data type to process from the selected " +
             "parent objects.",
-            values=target_types, default="<on current>"),
+            values=target_types, default="<selected>"),
 
         scripts.String(
             P_FILE_ANN, optional=True, grouping="1.3",
@@ -793,9 +796,9 @@ def parameters_parsing(client):
         if client.getInput(key):
             params[key] = client.getInput(key, unwrap=True)
 
-    if params[P_TARG_DTYPE] == "<on current>":
+    if params[P_TARG_DTYPE] == "<selected>":
         params[P_TARG_DTYPE] = params[P_DTYPE]
-    elif " " in params[P_TARG_DTYPE]:
+    elif params[P_TARG_DTYPE].startswith("-"):
         # Getting rid of the trailing '---' added for the UI
         params[P_TARG_DTYPE] = params[P_TARG_DTYPE].split(" ")[1]
 

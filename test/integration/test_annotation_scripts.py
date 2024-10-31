@@ -380,7 +380,7 @@ class TestAnnotationScripts(ScriptTest):
         args = {
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
-            "Target Data_Type": rstring("<on current>"),
+            "Target Data_Type": rstring("<selected>"),
             "Old Namespace (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
             "Create new and merge": rbool(False)
@@ -425,7 +425,7 @@ class TestAnnotationScripts(ScriptTest):
         args = {
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
-            "Target Data_Type": rstring("<on current>"),
+            "Target Data_Type": rstring("<selected>"),
             "Old Namespace (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
             "Create new and merge": rbool(merge)
@@ -478,7 +478,7 @@ class TestAnnotationScripts(ScriptTest):
         args = {
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
-            "Target Data_Type": rstring("<on current>"),
+            "Target Data_Type": rstring("<selected>"),
             "Namespace (blank for default)": rlist([rstring("test_delete")]),
             agreement: rbool(agree_check)
         }
@@ -513,7 +513,7 @@ class TestAnnotationScripts(ScriptTest):
         args = {
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
-            "Target Data_Type": rstring("<on current>"),
+            "Target Data_Type": rstring("<selected>"),
             "Namespace (blank for default)": rlist([rstring("test")]),
             "CSV separator": rstring("TAB"),
             "Include parent container names": rbool(False),
@@ -605,7 +605,7 @@ class TestAnnotationScripts(ScriptTest):
         args = {
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image1.id.val), rlong(image2.id.val)]),
-            "Target Data_Type": rstring("<on current>"),
+            "Target Data_Type": rstring("<selected>"),
             "Namespace (blank for default)": rlist(ns_l),
             "CSV separator": rstring("TAB"),
             "Include parent container names": rbool(True),
