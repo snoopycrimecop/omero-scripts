@@ -56,9 +56,9 @@ def compare(list1, list2):
 
 
 # List of directories to scan and add the path.
-directories = ['../omero/analysis_scripts', '../omero/export_scripts',
-               '../omero/figure_scripts', '../omero/import_scripts',
-               '../omero/util_scripts']
+directories = ['../omero/annotation_scripts', '../omero/analysis_scripts',
+               '../omero/export_scripts', '../omero/figure_scripts',
+               '../omero/import_scripts', '../omero/util_scripts']
 
 scripts = []
 entries = []
