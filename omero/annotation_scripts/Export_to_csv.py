@@ -222,6 +222,8 @@ def main_loop(conn, script_params):
                 ancestry = []
                 for o in target_obj.getAncestry():
                     if o.OMERO_CLASS == "WellSample":
+                        if not o.getPlateAcquisition():
+                            continue
                         o = o.getPlateAcquisition()
                     ancestry.append((o.OMERO_CLASS, get_obj_name(o)))
                 obj_ancestry_l.append(ancestry[::-1])
