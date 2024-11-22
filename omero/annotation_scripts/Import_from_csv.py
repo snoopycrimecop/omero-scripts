@@ -431,7 +431,7 @@ def read_csv(conn, original_file, delimiter, import_tags):
                        str(e))
 
     # Read delimiter from CSV first line if exist
-    re_delimiter = re.compile("sep=(?P<delimiter>.?)")
+    re_delimiter = re.compile("[\"']?sep=(?P<delimiter>.?)[\"']?")
     match = re_delimiter.match(csv_content[0])
     if match:  # Need to discard first row
         csv_content = csv_content[1:]
