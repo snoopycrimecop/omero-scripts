@@ -791,7 +791,7 @@ def run_script():
                     rstring("--- Image")
     ]
 
-    separators = ["guess", ";", ",", "TAB"]
+    separators = ["guess", ";", ",", "TAB", "|"]
 
     client = scripts.client(
         'Import from CSV',
