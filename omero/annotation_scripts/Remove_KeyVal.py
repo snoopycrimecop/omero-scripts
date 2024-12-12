@@ -55,7 +55,7 @@ ALLOWED_PARAM = {
 P_DTYPE = "Data_Type"  # Do not change
 P_IDS = "IDs"  # Do not change
 P_TARG_DTYPE = "Target Data_Type"
-P_NAMESPACE = "Namespace (blank for default)"
+P_NAMESPACE = "Namespace(s) (blank for default)"
 P_AGREEMENT = ("I understand what I am doing and that this will result " +
                "in a batch deletion of key-value pairs from the server")
 
@@ -280,7 +280,7 @@ def run_script():
         scripts.List(
             P_NAMESPACE, optional=True,
             grouping="1.3",
-            description="Namespace(s) of the key-value pairs to " +
+            description="Namespace(s) of the Key-Value pairs to " +
                         "delete. Client namespace by default, " +
                         "'*' for all.").ofType(rstring("")),
 
@@ -342,7 +342,7 @@ def parameters_parsing(client):
             params[key] = client.getInput(key, unwrap=True)
 
     assert params[P_AGREEMENT], "Please tick the box to confirm that you " +\
-                                "understood the risks."
+                                "understood the risks of a batch deletion."
 
     if params[P_TARG_DTYPE] == "<selected>":
         params[P_TARG_DTYPE] = params[P_DTYPE]

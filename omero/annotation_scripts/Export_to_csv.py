@@ -59,11 +59,11 @@ ALLOWED_PARAM = {
 P_DTYPE = "Data_Type"  # Do not change
 P_IDS = "IDs"  # Do not change
 P_TARG_DTYPE = "Target Data_Type"
-P_NAMESPACE = "Namespace (blank for default)"
+P_NAMESPACE = "Namespace(s) (blank for default)"
 P_CSVSEP = "CSV separator"
 P_INCL_PARENT = "Include parent container names"
-P_INCL_NS = "Include namespace"
-P_INCL_TAG = "Include tags"
+P_INCL_NS = "Include Namespace"
+P_INCL_TAG = "Include Tags"
 
 # Add your OMERO.web URL for direct download from link:
 # eg https://omero-adress.org/webclient
@@ -607,7 +607,7 @@ def run_script():
         scripts.List(
             P_NAMESPACE, optional=True,
             grouping="1.3",
-            description="Namespace(s) of the key-value pairs " +
+            description="Namespace(s) of the Key-Value pairs " +
                         "to export. Client namespace by default, " +
                         "'*' for all.").ofType(rstring("")),
 
@@ -629,13 +629,13 @@ def run_script():
         scripts.Bool(
             P_INCL_NS, optional=True,
             grouping="2.3",
-            description="Check to include the namespaces " +
-                        "of the key-value pairs in the CSV.", default=False),
+            description="Check to include the Namespaces " +
+                        "of the Key-Value pairs in the CSV.", default=False),
 
         scripts.Bool(
             P_INCL_TAG, optional=True,
             grouping="2.4",
-            description="Check to include tags in the CSV file.",
+            description="Check to include Tags in the CSV file.",
             default=False),
 
         authors=["Christian Evenhuis", "MIF", "Tom Boissonnet"],

@@ -65,11 +65,11 @@ P_CSVSEP = "CSV separator"
 P_EXCL_COL = "Columns to exclude"
 P_TARG_COLID = "Target ID colname"
 P_TARG_COLNAME = "Target name colname"
-P_EXCL_EMPTY = "Exclude empty values"
-P_SPLIT_CELL = "Split values on"
-P_IMPORT_TAGS = "Import tags"
-P_OWN_TAG = "Only use personal tags"
-P_ALLOW_NEWTAG = "Allow tag creation"
+P_EXCL_EMPTY = "Exclude empty Values"
+P_SPLIT_CELL = "Split Values on"
+P_IMPORT_TAGS = "Import Tags"
+P_OWN_TAG = "Only use personal Tags"
+P_ALLOW_NEWTAG = "Allow Tag creation"
 
 
 def get_obj_name(omero_obj):
@@ -229,7 +229,7 @@ def main_loop(conn, script_params):
             file_ann = conn.getObject("Annotation", oid=file_ann_id)
             assert file_ann is not None, f"Annotation {file_ann_id} not found"
             assert file_ann.OMERO_TYPE == omero.model.FileAnnotationI, \
-                ("The provided annotation ID must reference a " +
+                ("The provided Annotation ID must reference a " +
                  f"FileAnnotation, not a {file_ann.OMERO_TYPE}")
         else:
             file_ann = get_original_file(source_object)
@@ -276,7 +276,7 @@ def main_loop(conn, script_params):
                           if name_list.count(name) > 1}
             print("duplicates:", duplicates)
             assert not len(duplicates) > 0, \
-                (f"The .csv contains duplicates {duplicates} which makes" +
+                (f"The CSV contains duplicates {duplicates} which makes" +
                  " it impossible to correctly allocate the annotations.")
 
             # Identify target-objects by name fail if two have identical names
@@ -393,7 +393,7 @@ def get_original_file(omero_obj):
                     file_ann = ann
 
     assert file_ann is not None, \
-        (f"No .csv FileAnnotation was found on {omero_obj.OMERO_CLASS}" +
+        (f"No CSV FileAnnotation was found on {omero_obj.OMERO_CLASS}" +
          f":{get_obj_name(omero_obj)}:{omero_obj.getId()}")
 
     return file_ann
@@ -426,7 +426,7 @@ def read_csv(conn, original_file, delimiter, import_tags):
         with open(temp_file.name, mode="rt", encoding='utf-8-sig') as f:
             csv_content = f.readlines()
     except UnicodeDecodeError as e:
-        assert False, ("Error while reading the csv, convert your " +
+        assert False, ("Error while reading the CSV, convert your " +
                        "file to utf-8 encoding" +
                        str(e))
 
@@ -668,8 +668,8 @@ def preprocess_tag_rows(conn, header, rows, tag_d, tagset_d,
                     tag_o = tagid_d[tagid]
                     if tagname is not None or tagname != "":
                         assert tag_o.getValue() == tagname, (
-                            f"The tag {tagname} doesn't correspond" +
-                            f" to the tag on the server with ID:{tagid}"
+                            f"The Tag {tagname} doesn't correspond" +
+                            f" to the Tag on the server with ID:{tagid}"
                         )
                     tagid_l.append(str(tagid))
                     # We found the tag
@@ -680,9 +680,9 @@ def preprocess_tag_rows(conn, header, rows, tag_d, tagset_d,
                 if not has_tagset:
                     tag_exist = tagname in tag_d.keys()
                     assert (tag_exist or create_new_tags), (
-                        f"The tag '{tagname}'" +
+                        f"The Tag '{tagname}'" +
                         " does not exist while" +
-                        " creation of new tags" +
+                        " creation of new Tags" +
                         " is not permitted"
                     )
                     if not tag_exist:
@@ -699,10 +699,10 @@ def preprocess_tag_rows(conn, header, rows, tag_d, tagset_d,
                     tag_exist = (tagset_exist
                                  and (tagname in tagtree_d[tagset].keys()))
                     assert (tag_exist or create_new_tags), (
-                        f"The tag '{tagname}' " +
-                        f"in TagSet '{tagset}'" +
+                        f"The Tag '{tagname}' " +
+                        f"in Tagset '{tagset}'" +
                         " does not exist while" +
-                        " creation of new tags" +
+                        " creation of new Tags" +
                         " is not permitted"
                     )
                     if not tag_exist:
@@ -830,22 +830,22 @@ def run_script():
             P_NAMESPACE,
             optional=True, grouping="1.4",
             description="Namespace assigned to the key-value pairs. " +
-                        "Default is the client " +
+                        "Default is the Client " +
                         "namespace (editable in OMERO.web)."),
 
         scripts.Bool(
             P_IMPORT_TAGS, optional=True, grouping="2", default=True,
-            description="Check this box to allow the import of tags."),
+            description="Check this box to allow the import of Tags."),
 
         scripts.Bool(
             P_OWN_TAG, optional=True, grouping="2.1", default=False,
-            description="Restrict the usage of tags to the ones owned " +
-            "by the user. If checked, tags owned by others will not be " +
-            "considered for the creation of new tags."),
+            description="Restrict the usage of Tags to the ones owned " +
+            "by the user. If checked, Tags owned by others will not be " +
+            "considered for the creation of new Tags."),
 
         scripts.Bool(
             P_ALLOW_NEWTAG, optional=True, grouping="2.2", default=False,
-            description="Creates new tags and tagsets if the ones" +
+            description="Creates new Tags and Tagsets if the ones" +
             " specified in the CSV do not exist."),
 
         scripts.Bool(
@@ -854,7 +854,7 @@ def run_script():
 
         scripts.Bool(
             P_EXCL_EMPTY, optional=True, grouping="3.1", default=True,
-            description="Skip the keys with empty values."),
+            description="Skip the Keys with empty Values."),
 
         scripts.String(
             P_CSVSEP, optional=True, grouping="3.2",
@@ -867,12 +867,12 @@ def run_script():
             P_SPLIT_CELL, optional=True, grouping="3.3",
             default="",
             description="Separator used to split cells into multiple " +
-                        "key-value pairs."),
+                        "Key-Value pairs."),
 
         scripts.List(
             P_EXCL_COL, optional=True, grouping="3.4",
             default="<ID>,<NAME>,<PARENTS>",
-            description="Columns to exclude from the key-value pairs. " +
+            description="Columns to exclude from the Key-Value pairs. " +
                         "<ID> and <NAME> correspond to the column name " +
                         "specified by the next two parameters. " +
                         "<PARENTS> matches all {PROJECT, DATASET, " +
@@ -953,7 +953,7 @@ def parameters_parsing(client):
 
     if params[P_DTYPE] == "Tag":
         assert params[P_FILE_ANN] is not None, \
-            "File annotation ID must be given when using Tag as source"
+            "File Annotation ID must be given when using Tag as source"
 
     if ((params[P_FILE_ANN]) is not None
             and ("," in params[P_FILE_ANN])):

@@ -52,7 +52,7 @@ ALLOWED_PARAM = {
 P_DTYPE = "Data_Type"  # Do not change
 P_IDS = "IDs"  # Do not change
 P_TARG_DTYPE = "Target Data_Type"
-P_OLD_NS = "Old Namespace (blank for default)"
+P_OLD_NS = "Old Namespace(s) (blank for default)"
 P_NEW_NS = "New Namespace (blank for default)"
 P_MERGE = "Create new and merge"
 
@@ -338,19 +338,19 @@ def run_script():
 
         scripts.List(
             P_OLD_NS, optional=True, grouping="1.4",
-            description="Namespace(s) of the key-value pairs to " +
+            description="Namespace(s) of the Key-Value pairs to " +
                         "process. Client namespace by default, " +
                         "'*' for all.").ofType(rstring("")),
 
         scripts.String(
             P_NEW_NS, optional=True, grouping="1.5",
-            description="The new namespace for the annotations."),
+            description="The new Namespace for the annotations."),
 
         scripts.Bool(
             P_MERGE, optional=True, grouping="1.6",
-            description="Check to merge selected key-value pairs " +
+            description="Check to merge selected Key-Value pairs " +
                         "into a single new one (will also include " +
-                        "existing key-value pairs having the New Namespace)",
+                        "Key-Value pairs already in the 'New Namespace')",
                         default=False),
 
         authors=["Tom Boissonnet"],
