@@ -52,7 +52,7 @@ ALLOWED_PARAM = {
 P_DTYPE = "Data_Type"  # Do not change
 P_IDS = "IDs"  # Do not change
 P_TARG_DTYPE = "Target Data_Type"
-P_OLD_NS = "Old Namespace(s) (blank for default)"
+P_OLD_NS = "Input Namespace(s) (blank for default)"
 P_NEW_NS = "New Namespace (blank for default)"
 P_MERGE = "Create new and merge"
 
