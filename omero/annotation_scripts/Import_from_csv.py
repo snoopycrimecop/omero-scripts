@@ -483,23 +483,23 @@ def read_csv(conn, original_file, delimiter, import_tags):
 def annotate_object(conn, obj, row, header, namespaces,
                     exclude_empty_value, tagid_d, split_on):
     """
-    Annotate a target object with key-value pairs and tags based on a row
+    Annotate a target object with Key-Value pairs and tags based on a row
     of CSV data.
 
     :param conn: OMERO connection for server interaction.
     :type conn: omero.gateway.BlitzGateway
     :param obj: OMERO object to be annotated.
     :type obj: omero.model.<ObjectType>
-    :param row: Data row containing values for annotations.
+    :param row: Data row containing Values for annotations.
     :type row: list of str
-    :param header: Column headers corresponding to the row values.
+    :param header: Column headers corresponding to the row Values.
     :type header: list of str
     :param namespaces: Namespace for each header, specifying context of
         annotation.
     :type namespaces: list of str
-    :param exclude_empty_value: If True, excludes empty values in annotations.
+    :param exclude_empty_value: If True, excludes empty Values in annotations.
     :type exclude_empty_value: bool
-    :param tagid_d: Dictionary of tag IDs to their tag objects.
+    :param tagid_d: Dictionary of Tag IDs to their Tag objects.
     :type tagid_d: dict
     :param split_on: Character to split multi-value fields.
     :type split_on: str
@@ -551,14 +551,14 @@ def annotate_object(conn, obj, row, header, namespaces,
 
 def get_tag_dict(conn, use_personal_tags):
     """
-    Create dictionaries of tags, tagsets, and tags in tagsets for annotation.
+    Create dictionaries of Tags, Tagsets, and Tags in Tagsets for annotation.
 
     :param conn: OMERO connection for server interaction.
     :type conn: omero.gateway.BlitzGateway
-    :param use_personal_tags: If True, only tags owned by the user are used.
+    :param use_personal_tags: If True, only Tags owned by the user are used.
     :type use_personal_tags: bool
     :return: Four dictionaries: tag_d, tagset_d, tagtree_d, and tagid_d for
-        tags and tag relationships.
+        Tags and Tag relationships.
     :rtype: tuple
     :return: tag_d: dictionary of tag_ids {"tagA": [12], "tagB":[34,56]}
     :return: tagset_d: dictionary of tagset_ids {"tagsetX":[78]}
@@ -613,7 +613,7 @@ def preprocess_tag_rows(conn, header, rows, tag_d, tagset_d,
                         tagtree_d, tagid_d,
                         create_new_tags, split_on):
     """
-    Convert tag names in CSV rows to tag IDs for efficient processing.
+    Convert Tag names in CSV rows to Tag IDs for efficient processing.
     In case of an error, the script fails here before the annotation
     process starts.
 
@@ -621,21 +621,21 @@ def preprocess_tag_rows(conn, header, rows, tag_d, tagset_d,
     :type conn: omero.gateway.BlitzGateway
     :param header: Headers from the CSV file.
     :type header: list of str
-    :param rows: Rows of CSV data with tag information.
+    :param rows: Rows of CSV data with Tag information.
     :type rows: list of list of str
-    :param tag_d: Dictionary mapping tag names to their IDs.
+    :param tag_d: Dictionary mapping Tag names to their IDs.
     :type tag_d: dict
-    :param tagset_d: Dictionary mapping tagset names to their IDs.
+    :param tagset_d: Dictionary mapping Tagset names to their IDs.
     :type tagset_d: dict
-    :param tagtree_d: Dictionary of tags grouped by tagset names.
+    :param tagtree_d: Dictionary of Tags grouped by Tagset names.
     :type tagtree_d: dict
-    :param tagid_d: Dictionary mapping tag IDs to their tag objects.
+    :param tagid_d: Dictionary mapping Tag IDs to their tag objects.
     :type tagid_d: dict
-    :param create_new_tags: If True, new tags are created if not found.
+    :param create_new_tags: If True, new Tags are created if not found.
     :type create_new_tags: bool
-    :param split_on: Character to split multi-value tag cells.
+    :param split_on: Character to split multi-value Tag cells.
     :type split_on: str
-    :return: Processed rows with tag IDs, updated dictionaries for tags and
+    :return: Processed rows with Tag IDs, updated dictionaries for tags and
         tagsets.
     :rtype: tuple
     """
@@ -769,7 +769,7 @@ def run_script():
 
     This function establishes a client connection, gathers user input
     parameters, and initializes a connection to the OMERO server to
-    parse a CSV file for key-value pairs, tags, and other metadata
+    parse a CSV file for Key-Value pairs, tags, and other metadata
     to annotate objects in the OMERO database.
 
     :return: Sets output messages and result objects for OMERO client session.
@@ -796,12 +796,12 @@ def run_script():
     client = scripts.client(
         'Import from CSV',
         """
-    Import key-value pairs and tags from a CSV file.
+    Import Key-Value pairs and Tags from a CSV file.
     \t
     Check the guide for more information on parameters and errors:
     https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html
     \t
-    Default namespace: openmicroscopy.org/omero/client/mapAnnotation
+    Default Namespace: openmicroscopy.org/omero/client/mapAnnotation
         """,  # Tabs are needed to add line breaks in the HTML
 
         scripts.String(

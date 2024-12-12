@@ -98,7 +98,7 @@ def target_iterator(conn, source_object, target_type, is_tag):
     :type source_object: omero.model.<ObjectType>
     :param target_type: Target object type to retrieve.
     :type target_type: str
-    :param is_tag: Flag indicating if the source object is a tag.
+    :param is_tag: Flag indicating if the source object is a Tag.
     :type is_tag: bool
     :yield: Target objects of the specified type.
     :rtype: omero.model.<ObjectType>
@@ -144,14 +144,13 @@ def target_iterator(conn, source_object, target_type, is_tag):
 
 def main_loop(conn, script_params):
     """
-    Iterates through specified OMERO objects and removes key-value pair
-    annotations
-    within given namespaces.
+    Iterates through specified OMERO objects and removes Key-Value pair
+    annotations within given Namespaces.
 
     :param conn: OMERO connection for server interaction.
     :type conn: omero.gateway.BlitzGateway
     :param script_params: Dictionary of script parameters including source data
-        type, target data type, object IDs, and namespace list.
+        type, target data type, object IDs, and Namespace list.
     :type script_params: dict
     :return: Message indicating the success of the deletions, and the result
         object if any annotation was removed.
@@ -178,7 +177,7 @@ def main_loop(conn, script_params):
 
             ntotal += 1
         print("\n------------------------------------\n")
-    message = (f"Key value data deleted from {nsuccess} of " +
+    message = (f"Key-Value pairs deleted from {nsuccess} out of " +
                f"{ntotal} {target_type}s.")
 
     return message, result_obj
@@ -186,14 +185,14 @@ def main_loop(conn, script_params):
 
 def remove_map_annotations(conn, obj, namespace_l):
     """
-    Deletes map annotations within the specified namespaces from an
+    Deletes map annotations within the specified Namespaces from an
     OMERO object.
 
     :param conn: OMERO connection for server interaction.
     :type conn: omero.gateway.BlitzGateway
-    :param obj: OMERO object from which map annotations will be removed.
+    :param obj: OMERO object from which MapAnnotations will be removed.
     :type obj: omero.model.<ObjectType>
-    :param namespace_l: List of namespaces to remove annotations from; '*'
+    :param namespace_l: List of Namespaces to remove annotations from; '*'
         denotes all namespaces.
     :type namespace_l: list
     :return: 1 if annotations were successfully deleted, 0 otherwise.
@@ -254,7 +253,7 @@ def run_script():
     client = scripts.client(
         'Remove Key-Value pairs',
         """
-    Deletes key-value pairs of the selected objects.
+    Deletes Key-Value pairs of the selected objects.
     \t
     Check the guide for more information on parameters and errors:
     https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html

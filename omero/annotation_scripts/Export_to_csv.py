@@ -269,7 +269,7 @@ def main_loop(conn, script_params):
     if file_ann is None:
         message = "The CSV is printed in output, no file could be attached:"
     else:
-        message = ("The csv is attached to " +
+        message = ("The CSV is attached to " +
                    f"{result_obj.OMERO_CLASS}:{result_obj.getId()}.")
 
     return message, file_ann, result_obj
@@ -277,11 +277,11 @@ def main_loop(conn, script_params):
 
 def get_all_tags(conn):
     """
-    Retrieves all tag annotations and tagsets from OMERO.
+    Retrieves all Tag annotations and Tagsets from OMERO.
 
     :param conn: OMERO connection for server interaction.
     :type conn: omero.gateway.BlitzGateway
-    :return: Dictionary mapping tag IDs to tag names or tagset names.
+    :return: Dictionary mapping tag IDs to Tag names or Tagset names.
     :rtype: dict
     """
     all_tag_d = {}
@@ -305,14 +305,14 @@ def get_all_tags(conn):
 
 def get_existing_map_annotations(obj, namespace):
     """
-    Retrieves existing key-value pair annotations from an OMERO object.
+    Retrieves existing Key-Value pair annotations from an OMERO object.
 
     :param obj: OMERO object to retrieve annotations from.
     :type obj: omero.model.<ObjectType>
-    :param namespace: Specific namespace of annotations to retrieve; '*'
+    :param namespace: Specific Namespace of annotations to retrieve; '*'
         retrieves all.
     :type namespace: str
-    :return: List of MapAnnotationWrapper objects for the specified namespace.
+    :return: List of MapAnnotationWrapper objects for the specified Namespace.
     :rtype: list
     """
     annotation_l = []
@@ -325,13 +325,13 @@ def get_existing_map_annotations(obj, namespace):
 
 def get_existing_tag_annotations(obj, all_tag_d):
     """
-    Retrieves existing tag annotations from an OMERO object.
+    Retrieves existing Tag annotations from an OMERO object.
 
-    :param obj: OMERO object to retrieve tags from.
+    :param obj: OMERO object to retrieve Tags from.
     :type obj: omero.model.<ObjectType>
-    :param all_tag_d: Dictionary of all tags with tagset names, if applicable.
+    :param all_tag_d: Dictionary of all Tags with Tagset names, if applicable.
     :type all_tag_d: dict
-    :return: List of tag names associated with the specified OMERO object.
+    :return: List of Tag names associated with the specified OMERO object.
     :rtype: list
     """
     annotation_l = []
@@ -344,16 +344,16 @@ def get_existing_tag_annotations(obj, all_tag_d):
 
 def build_rows(annotation_dict_l, tagannotation_l, include_namespace):
     """
-    Constructs rows for CSV export by organizing annotations and tags.
+    Constructs rows for CSV export by organizing annotations and Tags.
 
-    :param annotation_dict_l: Dictionary of annotations organized by namespace.
+    :param annotation_dict_l: Dictionary of annotations organized by Namespace.
     :type annotation_dict_l: defaultdict(list)
-    :param tagannotation_l: List of tag annotations.
+    :param tagannotation_l: List of Tag annotations.
     :type tagannotation_l: list
-    :param include_namespace: Flag indicating if namespace should be included
+    :param include_namespace: Flag indicating if Namespace should be included
         in the CSV.
     :type include_namespace: bool
-    :return: Tuple containing namespace row, header row, and data rows for
+    :return: Tuple containing Namespace row, header row, and data rows for
         the CSV.
     :rtype: tuple
     """
@@ -385,7 +385,7 @@ def build_rows(annotation_dict_l, tagannotation_l, include_namespace):
 
 def group_keyvalues(objannotation_l):
     """
-    Groups key-value pairs of each object into a unified structure for
+    Groups Key-Value pairs of each object into a unified structure for
     CSV export.
 
     :param objannotation_l: List of object annotations to be grouped.
@@ -439,7 +439,7 @@ def sort_concat_rows(ns_row, header_row, rows, obj_id_l,
     :type obj_name_l: list
     :param obj_ancestry_l: List of ancestry details for each object.
     :type obj_ancestry_l: list
-    :return: Tuple containing updated namespace row, header row, and sorted
+    :return: Tuple containing updated Namespace row, header row, and sorted
         data rows.
     :rtype: tuple
     """
@@ -580,7 +580,7 @@ def run_script():
     client = scripts.client(
         'Export to CSV',
         """
-    Exports in a CSV the key-value pairs, tags, name and ID
+    Exports in a CSV the Key-Value pairs, Tags, name and ID
     of the selected objects.
     \t
     Check the guide for more information on parameters and errors:

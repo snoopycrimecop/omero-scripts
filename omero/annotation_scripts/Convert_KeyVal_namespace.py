@@ -141,11 +141,11 @@ def target_iterator(conn, source_object, target_type, is_tag):
 
 def main_loop(conn, script_params):
     """
-    Process OMERO objects, updating or merging namespaces of key-value
+    Process OMERO objects, updating or merging Namespaces of Key-Value
     annotations.
 
     This function iterates over objects, identifies annotations with specified
-    namespaces, and either updates or merges them according to provided
+    Namespaces, and either updates or merges them according to provided
     parameters.
 
     :param conn: OMERO connection object for database operations.
@@ -191,10 +191,10 @@ def main_loop(conn, script_params):
                 if result_obj is None:
                     result_obj = target_obj
             else:
-                print("\tNo MapAnnotation found with that namespace\n")
+                print("\tNo MapAnnotation found with that Namespace\n")
         print("\n------------------------------------\n")
     message = (
-        "Updated kv pairs to " +
+        "Updated Key-Value pairs to " +
         f"{ntarget_updated}/{ntarget_processed} {target_type}."
     )
 
@@ -203,15 +203,15 @@ def main_loop(conn, script_params):
 
 def get_existing_map_annotations(obj, namespace_l):
     """
-    Retrieve existing map annotations with specified namespaces from an
+    Retrieve existing map annotations with specified Namespaces from an
     OMERO object.
 
     :param obj: OMERO object from which annotations are retrieved.
     :type obj: omero.model.<ObjectType>
     :param namespace_l: List of namespaces used to filter annotations.
     :type namespace_l: list of str
-    :return: A tuple containing a list of key-value pairs and a list of map
-        annotation objects.
+    :return: A tuple containing a list of Key-Value pairs and a list of
+        MapAnnotation objects.
     :rtype: tuple
     """
     keyval_l, ann_l = [], []
@@ -233,7 +233,7 @@ def get_existing_map_annotations(obj, namespace_l):
 
 def remove_map_annotations(conn, ann_l):
     """
-    Delete specified map annotations from OMERO.
+    Delete specified MapAnnotations from OMERO.
 
     :param conn: OMERO connection for server interaction.
     :type conn: omero.gateway.BlitzGateway
@@ -257,14 +257,14 @@ def remove_map_annotations(conn, ann_l):
 
 def annotate_object(conn, obj, kv_list, namespace):
     """
-    Create a new map annotation with specified key-value pairs on an
+    Create a new MapAnnotation with specified Key-Value pairs on an
     OMERO object.
 
     :param conn: OMERO connection object for annotation.
     :type conn: omero.gateway.BlitzGateway
     :param obj: OMERO object to annotate.
     :type obj: omero.model.<ObjectType>
-    :param kv_list: Key-value pairs to include in the annotation.
+    :param kv_list: Key-Value pairs to include in the annotation.
     :type kv_list: list of tuples
     :param namespace: Namespace for the new annotation.
     :type namespace: str
@@ -282,7 +282,7 @@ def annotate_object(conn, obj, kv_list, namespace):
 
 def run_script():
     """
-    Execute the OMERO script to convert namespaces for key-value pair
+    Execute the OMERO script to convert Namespaces for key-value pair
     annotations.
 
     This function initializes the script parameters, processes input from the
@@ -313,12 +313,12 @@ def run_script():
     client = scripts.client(
         'Convert Key-Value pairs namespace',
         """
-    Converts the namespace of key-value pairs.
+    Converts the Namespace of Key-Value pairs.
     \t
     Check the guide for more information on parameters and errors:
     https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html
     \t
-    Default namespace: openmicroscopy.org/omero/client/mapAnnotation
+    Default Namespace: openmicroscopy.org/omero/client/mapAnnotation
         """,  # Tabs are needed to add line breaks in the HTML
 
         scripts.String(
@@ -391,7 +391,7 @@ def run_script():
 def parameters_parsing(client):
     """
     Parse input parameters from the OMERO client, establishing defaults and
-    validating specific combinations for data types and namespaces.
+    validating specific combinations for data types and Namespaces.
 
     :param client: The OMERO client object from which input parameters are
     retrieved.
