@@ -57,7 +57,7 @@ P_IDS = "IDs"  # Do not change
 P_TARG_DTYPE = "Target Data_Type"
 P_NAMESPACE = "Namespace(s) (blank for default)"
 P_AGREEMENT = ("I understand what I am doing and that this will result " +
-               "in a batch deletion of key-value pairs from the server")
+               "in a batch deletion of Key-Value pairs from the server")
 
 
 def get_children_recursive(source_object, target_type):
