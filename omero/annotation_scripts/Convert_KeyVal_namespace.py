@@ -316,7 +316,7 @@ def run_script():
     Converts the Namespace of Key-Value pairs.
     \t
     Check the guide for more information on parameters and errors:
-    https://guide-kvpairs-scripts.readthedocs.io/en/latest/index.html
+    https://omero-guides.readthedocs.io/en/latest/scripts/docs/annotation_scripts.html
     \t
     Default Namespace: openmicroscopy.org/omero/client/mapAnnotation
         """,  # Tabs are needed to add line breaks in the HTML
