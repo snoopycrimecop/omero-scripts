@@ -479,7 +479,8 @@ class TestAnnotationScripts(ScriptTest):
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<selected>"),
-            "Namespace(s) (blank for default)": rlist([rstring("test_delete")]),
+            "Namespace(s) (blank for default)":
+                rlist([rstring("test_delete")]),
             agreement: rbool(agree_check)
         }
 
@@ -487,7 +488,9 @@ class TestAnnotationScripts(ScriptTest):
         if not agree_check:  # should be an AssertionError, returning None
             assert msg is None
         else:
-            assert msg._val == "Key-Value pairs deleted from 1 out of 1 Images."
+            assert (
+                msg._val == "Key-Value pairs deleted from 1 out of 1 Images."
+            )
             conn = BlitzGateway(client_obj=client)
             image_o = conn.getObject("Image", image.id.val)
             assert len(list(image_o.listAnnotations())) == 0
