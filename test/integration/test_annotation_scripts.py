@@ -276,7 +276,7 @@ class TestAnnotationScripts(ScriptTest):
         args["Target Data_Type"] = rstring("-- Well")
         args["File_Annotation"] = rstring(str(fa.id))
         args["Split Values on"] = rstring(",")
-        args["Exclude empty values"] = rbool(False)
+        args["Exclude empty Values"] = rbool(False)
 
         msg = run_script(client, sid, args, "Message")
         conn = BlitzGateway(client_obj=client)
@@ -338,7 +338,7 @@ class TestAnnotationScripts(ScriptTest):
         args["IDs"] = rlist([rlong(plate.id.val)])
         args["Target Data_Type"] = rstring("-- Well")
         args["File_Annotation"] = rstring(str(fa.id))
-        args["Exclude empty values"] = rbool(True)
+        args["Exclude empty Values"] = rbool(True)
 
         msg = run_script(client, sid, args, "Message")
         conn = BlitzGateway(client_obj=client)
@@ -426,7 +426,7 @@ class TestAnnotationScripts(ScriptTest):
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<selected>"),
-            "Old Namespace(s) (blank for default)": rlist([rstring("test")]),
+            "Input Namespace(s) (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
             "Create new and merge": rbool(merge)
         }
@@ -479,7 +479,7 @@ class TestAnnotationScripts(ScriptTest):
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<selected>"),
-            "Namespace (blank for default)": rlist([rstring("test_delete")]),
+            "Namespace(s) (blank for default)": rlist([rstring("test_delete")]),
             agreement: rbool(agree_check)
         }
 
@@ -487,7 +487,7 @@ class TestAnnotationScripts(ScriptTest):
         if not agree_check:  # should be an AssertionError, returning None
             assert msg is None
         else:
-            assert msg._val == "Key-Value pairs deleted from 1 of 1 objects."
+            assert msg._val == "Key-Value pairs deleted from 1 out of 1 Images."
             conn = BlitzGateway(client_obj=client)
             image_o = conn.getObject("Image", image.id.val)
             assert len(list(image_o.listAnnotations())) == 0
@@ -606,11 +606,11 @@ class TestAnnotationScripts(ScriptTest):
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image1.id.val), rlong(image2.id.val)]),
             "Target Data_Type": rstring("<selected>"),
-            "Namespace (blank for default)": rlist(ns_l),
+            "Namespace(s) (blank for default)": rlist(ns_l),
             "CSV separator": rstring("TAB"),
             "Include parent container names": rbool(True),
-            "Include namespace": rbool(True),
-            "Include tags": rbool(True)
+            "Include Namespace": rbool(True),
+            "Include Tags": rbool(True)
         }
 
         run_script(client, sid, args, "Message")
