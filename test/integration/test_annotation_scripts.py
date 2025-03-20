@@ -112,15 +112,15 @@ class TestAnnotationScripts(ScriptTest):
         args["IDs"] = rlist([rlong(plate.id.val)])
         args["Target Data_Type"] = rstring("-- Well")
         args["File_Annotation"] = rstring(str(fa.id))
-        args["Import tags"] = rbool(import_tag)
-        args["Allow tag creation"] = rbool(tag_creation)
+        args["Import Tags"] = rbool(import_tag)
+        args["Allow Tag creation"] = rbool(tag_creation)
         if not ns_in_csv and ns != "":
             args["Namespace (blank for default or from csv)"] = rstring(ns)
 
         msg = run_script(client, sid, args, "Message")
 
         conn = BlitzGateway(client_obj=client)
-        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)."
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -212,7 +212,7 @@ class TestAnnotationScripts(ScriptTest):
 
         msg = run_script(client, sid, args, "Message")
 
-        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)."
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -280,7 +280,7 @@ class TestAnnotationScripts(ScriptTest):
 
         msg = run_script(client, sid, args, "Message")
         conn = BlitzGateway(client_obj=client)
-        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well}/{n_well} Well(s)."
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -342,7 +342,7 @@ class TestAnnotationScripts(ScriptTest):
 
         msg = run_script(client, sid, args, "Message")
         conn = BlitzGateway(client_obj=client)
-        assert msg._val == f"Added Annotations to {n_well-1}/{n_well} Well(s)"
+        assert msg._val == f"Added Annotations to {n_well-1}/{n_well} Well(s)."
         plate_o = conn.getObject("Plate", plate.id.val)
         list_well = list(plate_o.listChildren())
         list_well = sorted(list_well, key=lambda w: w.getWellPos())
@@ -381,14 +381,14 @@ class TestAnnotationScripts(ScriptTest):
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<selected>"),
-            "Old Namespace (blank for default)": rlist([rstring("test")]),
+            "Old Namespace(s) (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
             "Create new and merge": rbool(False)
         }
 
         msg = run_script(client, sid, args, "Message")
 
-        assert msg._val == "Updated kv pairs to 1/1 Image"
+        assert msg._val == "Updated Key-Value pairs to 1/1 Image."
 
         conn = BlitzGateway(client_obj=client)
         image_o = conn.getObject("Image", image.id.val)
@@ -426,7 +426,7 @@ class TestAnnotationScripts(ScriptTest):
             "Data_Type": rstring("Image"),
             "IDs": rlist([rlong(image.id.val)]),
             "Target Data_Type": rstring("<selected>"),
-            "Old Namespace (blank for default)": rlist([rstring("test")]),
+            "Old Namespace(s) (blank for default)": rlist([rstring("test")]),
             "New Namespace (blank for default)": rstring("new_ns"),
             "Create new and merge": rbool(merge)
         }
@@ -459,7 +459,7 @@ class TestAnnotationScripts(ScriptTest):
 
         agreement = (
             "I understand what I am doing and that this will result " +
-            "in a batch deletion of key-value pairs from the server"
+            "in a batch deletion of Key-Value pairs from the server"
         )
 
         sid = super(TestAnnotationScripts, self).get_script(remove_script)
@@ -523,7 +523,7 @@ class TestAnnotationScripts(ScriptTest):
 
         msg = run_script(client, sid, args, "Message")
 
-        assert msg._val == f"The csv is attached to Image:{image.id.val}"
+        assert msg._val == f"The CSV is attached to Image:{image.id.val}."
 
         conn = BlitzGateway(client_obj=client)
         img_o = conn.getObject("Image", image.id.val)
