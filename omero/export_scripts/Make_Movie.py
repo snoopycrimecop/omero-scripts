@@ -94,7 +94,7 @@ def download_plane(gateway, pixels, pixels_id, x, y, z, c, t):
 def upload_plane(gateway, new_pixels_id, x, y, z, c, t, new_plane):
     """Uploads the specified plane. """
     byte_swapped_plane = new_plane.byteswap()
-    converted_plane = byte_swapped_plane.tostring()
+    converted_plane = byte_swapped_plane.tobytes()
     gateway.upload_plane(new_pixels_id, z, c, t, converted_plane)
 
 
