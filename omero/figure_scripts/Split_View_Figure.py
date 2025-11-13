@@ -368,7 +368,7 @@ def make_split_view_figure(conn, pixel_ids, z_start, z_end, split_indexes,
         fontsize = 16
 
     spacer = (width // 25) + 2
-    text_gap = 3        # gap between text and image panels
+    text_gap = 20        # gap between text and image panels
     left_text_width = 0
     text_height = 0
 
@@ -512,6 +512,10 @@ def split_view_figure(conn, script_params):
         def get_tags(name, tags_list, pd_list):
             return [t for t in tags_list]
         get_labels = get_tags
+    elif script_params["Image_Labels"] == "Custom":
+        def get_custom_label(name, tags_list, pd_list):
+            return [script_params["Custom_Label"]]
+        get_labels = get_custom_label
     else:
         get_labels = get_image_names
 
@@ -674,7 +678,7 @@ def run_script():
     """
 
     data_types = [rstring('Image')]
-    labels = [rstring('Image Name'), rstring('Datasets'), rstring('Tags')]
+    labels = [rstring('Image Name'), rstring('Datasets'), rstring('Tags'), rstring('Custom')]
     algorithms = [rstring('Maximum Intensity'), rstring('Mean Intensity')]
     formats = [rstring('JPEG'), rstring('PNG'), rstring('TIFF')]
     ckeys = list(COLOURS.keys())
@@ -750,31 +754,35 @@ See http://help.openmicroscopy.org/publish.html#figures""",
             description="Label images with Image name (default) or datasets"
             " or tags", values=labels, default='Image Name'),
 
+        scripts.String(
+            "Custom_Label", grouping="93",
+            description="User defined label", default=''),
+
         scripts.Int(
-            "Stepping", grouping="93",
+            "Stepping", grouping="94",
             description="The Z increment for projection.", default=1, min=1),
 
         scripts.Int(
-            "Scalebar", grouping="94",
+            "Scalebar", grouping="95",
             description="Scale bar size in microns. Only shown if image has"
             " pixel-size info.", min=1),
 
         scripts.String(
-            "Format", grouping="95",
+            "Format", grouping="96",
             description="Format to save image", values=formats,
             default='JPEG'),
 
         scripts.String(
-            "Figure_Name", grouping="96",
+            "Figure_Name", grouping="97",
             description="File name of the figure to save.",
             default='Split_View_Figure'),
 
         scripts.String(
-            "Overlay_Colour", grouping="97",
+            "Overlay_Colour", grouping="98",
             description="The color of the scale bar.",
             default='White', values=o_colours),
 
-        version="4.3.0",
+        version="4.4.0",
         authors=["William Moore", "OME Team"],
         institutions=["University of Dundee"],
         contact="ome-users@lists.openmicroscopy.org.uk",
