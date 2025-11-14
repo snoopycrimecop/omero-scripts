@@ -980,7 +980,7 @@ def parameters_parsing(client):
     if "<PARENTS>" in to_exclude:
         to_exclude.remove("<PARENTS>")
         to_exclude.extend(["PROJECT", "DATASET", "SCREEN",
-                           "PLATE", "PLATEACQUISITION", "WELL"])
+                           "PLATE", "RUN", "PLATEACQUISITION", "WELL"])
 
     params[P_EXCL_COL] = to_exclude
 
