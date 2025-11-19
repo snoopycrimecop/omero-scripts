@@ -499,22 +499,27 @@ def split_view_figure(conn, script_params):
     image_labels = []
 
     # function for getting image labels.
-    def get_image_names(full_name, tags_list, pd_list):
+    def get_image_names(full_name, tags_list, pd_list, iid):
         name = full_name.split("/")[-1]
         return [name]
 
     # default function for getting labels is getName (or use datasets / tags)
     if script_params["Image_Labels"] == "Datasets":
-        def get_datasets(name, tags_list, pd_list):
+        def get_datasets(name, tags_list, pd_list, iid):
             return [dataset for project, dataset in pd_list]
         get_labels = get_datasets
     elif script_params["Image_Labels"] == "Tags":
-        def get_tags(name, tags_list, pd_list):
+        def get_tags(name, tags_list, pd_list, iid):
             return [t for t in tags_list]
         get_labels = get_tags
     elif script_params["Image_Labels"] == "Custom":
-        def get_custom_label(name, tags_list, pd_list):
-            return [script_params["Custom_Label"]]
+        def get_custom_label(name, tags_list, pd_list, iid):
+            all_labels = script_params["All_labels"]
+            for label_pair in all_labels.split("$"):
+                if str(iid) in label_pair:
+                    if len(label_pair.split(":")) > 1:
+                        return [label_pair.split(":")[1]]
+            return [""]
         get_labels = get_custom_label
     else:
         get_labels = get_image_names
@@ -556,7 +561,7 @@ def split_view_figure(conn, script_params):
         log("  Tags: %s" % tags)
         log("  Project/Datasets: %s" % pd_string)
 
-        image_labels.append(get_labels(name, tags_list, pd_list))
+        image_labels.append(get_labels(name, tags_list, pd_list, iid))
 
     # use the first image to define dimensions, channel colours etc.
     size_x = omero_image.getSizeX()
@@ -755,7 +760,7 @@ See http://help.openmicroscopy.org/publish.html#figures""",
             " or tags", values=labels, default='Image Name'),
 
         scripts.String(
-            "Custom_Label", grouping="93",
+            "All_labels", grouping="93",
             description="User defined label", default=''),
 
         scripts.Int(
