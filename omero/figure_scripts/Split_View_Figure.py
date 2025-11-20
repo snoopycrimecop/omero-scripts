@@ -515,10 +515,10 @@ def split_view_figure(conn, script_params):
     elif script_params["Image_Labels"] == "Custom":
         def get_custom_label(name, tags_list, pd_list, iid):
             all_labels = script_params["All_labels"]
-            for label_pair in all_labels.split("$"):
+            for label_pair in all_labels.split("//n"):
                 if str(iid) in label_pair:
-                    if len(label_pair.split(":")) > 1:
-                        return [label_pair.split(":")[1]]
+                    if len(label_pair.split("//s")) > 1:
+                        return [label_pair.split("//s")[1]]
             return [""]
         get_labels = get_custom_label
     else:
