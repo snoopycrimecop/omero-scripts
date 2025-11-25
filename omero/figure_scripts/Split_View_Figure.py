@@ -683,7 +683,8 @@ def run_script():
     """
 
     data_types = [rstring('Image')]
-    labels = [rstring('Image Name'), rstring('Datasets'), rstring('Tags'), rstring('Custom')]
+    labels = [rstring('Image Name'), rstring('Datasets'), rstring('Tags'),
+              rstring('Custom')]
     algorithms = [rstring('Maximum Intensity'), rstring('Mean Intensity')]
     formats = [rstring('JPEG'), rstring('PNG'), rstring('TIFF')]
     ckeys = list(COLOURS.keys())
