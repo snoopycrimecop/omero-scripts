@@ -368,7 +368,7 @@ def make_split_view_figure(conn, pixel_ids, z_start, z_end, split_indexes,
         fontsize = 16
 
     spacer = (width // 25) + 2
-    text_gap = 20        # gap between text and image panels
+    text_gap = 3        # gap between text and image panels
     left_text_width = 0
     text_height = 0
 
@@ -765,30 +765,30 @@ See http://help.openmicroscopy.org/publish.html#figures""",
             description="User defined label", default=''),
 
         scripts.Int(
-            "Stepping", grouping="94",
+            "Stepping", grouping="93",
             description="The Z increment for projection.", default=1, min=1),
 
         scripts.Int(
-            "Scalebar", grouping="95",
+            "Scalebar", grouping="94",
             description="Scale bar size in microns. Only shown if image has"
             " pixel-size info.", min=1),
 
         scripts.String(
-            "Format", grouping="96",
+            "Format", grouping="95",
             description="Format to save image", values=formats,
             default='JPEG'),
 
         scripts.String(
-            "Figure_Name", grouping="97",
+            "Figure_Name", grouping="96",
             description="File name of the figure to save.",
             default='Split_View_Figure'),
 
         scripts.String(
-            "Overlay_Colour", grouping="98",
+            "Overlay_Colour", grouping="97",
             description="The color of the scale bar.",
             default='White', values=o_colours),
 
-        version="4.4.0",
+        version="4.3.0",
         authors=["William Moore", "OME Team"],
         institutions=["University of Dundee"],
         contact="ome-users@lists.openmicroscopy.org.uk",
