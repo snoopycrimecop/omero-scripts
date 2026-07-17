@@ -48,16 +48,8 @@ from omero.constants.namespaces import NSCREATED
 from omero.constants.metadata import NSMOVIE
 
 from io import BytesIO
-try:
-    from types import StringTypes
-except ImportError:
-    StringTypes = str
 
-try:
-    from PIL import Image, ImageDraw  # see ticket:2597
-except ImportError:
-    import Image
-    import ImageDraw  # see ticket:2597
+from PIL import Image, ImageDraw
 
 COLOURS = script_utils.COLOURS
 COLOURS.update(script_utils.EXTRA_COLOURS)    # name:(rgba) map
@@ -102,7 +94,7 @@ def download_plane(gateway, pixels, pixels_id, x, y, z, c, t):
 def upload_plane(gateway, new_pixels_id, x, y, z, c, t, new_plane):
     """Uploads the specified plane. """
     byte_swapped_plane = new_plane.byteswap()
-    converted_plane = byte_swapped_plane.tostring()
+    converted_plane = byte_swapped_plane.tobytes()
     gateway.upload_plane(new_pixels_id, z, c, t, converted_plane)
 
 
@@ -267,7 +259,7 @@ def valid_channels(set, size_c):
     if (len(set) == 0):
         return False
     for val in set:
-        if isinstance(val, StringTypes):
+        if isinstance(val, str):
             val = int(val.split('|')[0].split('$')[0])
         if (val < 0 or val > size_c):
             return False
@@ -355,7 +347,7 @@ def reshape_to_fit(image, size_x, size_y, bg=(0, 0, 0)):
     # scale
     ratio = min(float(size_x) / image_w, float(size_y) / image_h)
     image = image.resize(map(lambda x: int(x*ratio), image.size),
-                         Image.ANTIALIAS)
+                         Image.LANCZOS)
     # paste
     bg = Image.new("RGBA", (size_x, size_y), (0, 0, 0))     # black bg
     ovlpos = (size_x-image.size[0]) / 2, (size_y-image.size[1]) / 2
@@ -486,8 +478,8 @@ def write_movie(command_args, conn):
         c_windows = []
         c_colours = []
         for c in command_args["ChannelsExtended"]:
-            m = re.match('^(?P<i>\d+)(\|(?P<ws>\d+)' +
-                         '\:(?P<we>\d+))?(\$(?P<c>.+))?$', c)
+            m = re.match('^(?P<i>\\d+)(\\|(?P<ws>\\d+)' +
+                         '\\:(?P<we>\\d+))?(\\$(?P<c>.+))?$', c)
             if m is not None:
                 c_range.append(int(m.group('i'))-1)
                 c_windows.append([float(m.group('ws')), float(m.group('we'))])
@@ -594,7 +586,7 @@ def write_movie(command_args, conn):
         movie_name = "%s.%s" % (movie_name, ext)
 
     # spaces etc in file name cause problems
-    movie_name = re.sub("[$&\;|\(\)<>' ]", "", movie_name)
+    movie_name = re.sub("[$&\\;|\\(\\)<>' ]", "", movie_name)
     frames_per_sec = 2
     if "FPS" in command_args:
         frames_per_sec = command_args["FPS"]

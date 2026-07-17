@@ -56,9 +56,9 @@ def compare(list1, list2):
 
 
 # List of directories to scan and add the path.
-directories = ['../omero/analysis_scripts', '../omero/export_scripts',
-               '../omero/figure_scripts', '../omero/import_scripts',
-               '../omero/util_scripts']
+directories = ['../omero/annotation_scripts', '../omero/analysis_scripts',
+               '../omero/export_scripts', '../omero/figure_scripts',
+               '../omero/import_scripts', '../omero/util_scripts']
 
 scripts = []
 entries = []
@@ -86,7 +86,7 @@ copyright = u'2016-%d, %s ' % (now.year, author)
 
 # The full version, including alpha/beta/rc tags
 # The short X.Y version.
-version = '5.7.4.dev0'
+version = '5.10.1.dev0'
 release = version
 
 

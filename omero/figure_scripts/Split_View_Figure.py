@@ -43,11 +43,7 @@ import os
 import io
 from datetime import date
 
-try:
-    from PIL import Image, ImageDraw  # see ticket:2597
-except ImportError:
-    import Image
-    import ImageDraw  # see ticket:2597
+from PIL import Image, ImageDraw
 
 COLOURS = script_utils.COLOURS    # name:(rgba) map
 OVERLAY_COLOURS = dict(COLOURS, **script_utils.EXTRA_COLOURS)
@@ -386,7 +382,8 @@ def make_split_view_figure(conn, pixel_ids, z_start, z_end, split_indexes,
     font = image_utils.get_font(fontsize)
     mode = "RGB"
     white = (255, 255, 255)
-    text_height = font.getsize("Textq")[1]
+    box = font.getbbox("Textq")
+    text_height = box[3] - box[1]
 
     # if adding text to the left, write the text on horizontal canvas, then
     # rotate to vertical (below)
@@ -404,9 +401,9 @@ def make_split_view_figure(conn, pixel_ids, z_start, z_end, split_indexes,
         image_labels.reverse()
         for row in image_labels:
             py = left_text_width - text_gap  # start at bottom
-            for l, label in enumerate(row):
+            for count, label in enumerate(row):
                 py = py - text_height    # find the top of this row
-                w = textdraw.textsize(label, font=font)[0]
+                w = textdraw.textlength(label, font=font)
                 inset = int((height - w) // 2)
                 textdraw.text((px+inset, py), label, font=font,
                               fill=(0, 0, 0))
@@ -442,7 +439,8 @@ def make_split_view_figure(conn, pixel_ids, z_start, z_end, split_indexes,
     py = top_text_height + spacer - (text_height + text_gap)
     for index in split_indexes:
         # calculate the position of the text, centered above the image
-        w = font.getsize(channel_names[index])[0]
+        box = font.getbbox(channel_names[index])
+        w = box[2] - box[0]
         inset = int((width - w) // 2)
         # text is coloured if channel is grey AND in the merged image
         rgba = (0, 0, 0, 255)
@@ -465,12 +463,14 @@ def make_split_view_figure(conn, pixel_ids, z_start, z_end, split_indexes,
                 if rgba == (255, 255, 255, 255):  # if white (unreadable)
                     rgba = (0, 0, 0, 255)  # needs to be black!
             name = channel_names[index]
-            comb_text_width = font.getsize(name)[0]
+            box = font.getbbox(name)
+            comb_text_width = box[2] - box[0]
             inset = int((width - comb_text_width) // 2)
             draw.text((px + inset, py), name, font=font, fill=rgba)
             py = py - text_height
     else:
-        comb_text_width = font.getsize("Merged")[0]
+        box = font.getbbox("Merged")
+        comb_text_width = box[2] - box[0]
         inset = int((width - comb_text_width) // 2)
         px = px + inset
         draw.text((px, py), "Merged", font=font, fill=(0, 0, 0))
@@ -499,19 +499,28 @@ def split_view_figure(conn, script_params):
     image_labels = []
 
     # function for getting image labels.
-    def get_image_names(full_name, tags_list, pd_list):
+    def get_image_names(full_name, tags_list, pd_list, iid):
         name = full_name.split("/")[-1]
         return [name]
 
     # default function for getting labels is getName (or use datasets / tags)
     if script_params["Image_Labels"] == "Datasets":
-        def get_datasets(name, tags_list, pd_list):
+        def get_datasets(name, tags_list, pd_list, iid):
             return [dataset for project, dataset in pd_list]
         get_labels = get_datasets
     elif script_params["Image_Labels"] == "Tags":
-        def get_tags(name, tags_list, pd_list):
+        def get_tags(name, tags_list, pd_list, iid):
             return [t for t in tags_list]
         get_labels = get_tags
+    elif script_params["Image_Labels"] == "Custom":
+        def get_custom_label(name, tags_list, pd_list, iid):
+            all_labels = script_params["All_labels"]
+            for label_pair in all_labels.split("//n"):
+                if str(iid) in label_pair:
+                    if len(label_pair.split("//s")) > 1:
+                        return [label_pair.split("//s")[1]]
+            return [""]
+        get_labels = get_custom_label
     else:
         get_labels = get_image_names
 
@@ -552,7 +561,7 @@ def split_view_figure(conn, script_params):
         log("  Tags: %s" % tags)
         log("  Project/Datasets: %s" % pd_string)
 
-        image_labels.append(get_labels(name, tags_list, pd_list))
+        image_labels.append(get_labels(name, tags_list, pd_list, iid))
 
     # use the first image to define dimensions, channel colours etc.
     size_x = omero_image.getSizeX()
@@ -674,7 +683,8 @@ def run_script():
     """
 
     data_types = [rstring('Image')]
-    labels = [rstring('Image Name'), rstring('Datasets'), rstring('Tags')]
+    labels = [rstring('Image Name'), rstring('Datasets'), rstring('Tags'),
+              rstring('Custom')]
     algorithms = [rstring('Maximum Intensity'), rstring('Mean Intensity')]
     formats = [rstring('JPEG'), rstring('PNG'), rstring('TIFF')]
     ckeys = list(COLOURS.keys())
@@ -749,6 +759,10 @@ See http://help.openmicroscopy.org/publish.html#figures""",
             "Image_Labels", grouping="92",
             description="Label images with Image name (default) or datasets"
             " or tags", values=labels, default='Image Name'),
+
+        scripts.String(
+            "All_labels", grouping="93",
+            description="User defined label", default=''),
 
         scripts.Int(
             "Stepping", grouping="93",

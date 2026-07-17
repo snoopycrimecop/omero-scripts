@@ -29,7 +29,6 @@ images with the regions within the ROIs, and saves them back to the server.
 # @version 3.0
 # @since 3.0-Beta4.2
 
-from __future__ import print_function
 import omero
 import omero.scripts as scripts
 from omero.gateway import BlitzGateway
@@ -140,7 +139,7 @@ def get_rectangles(conn, image_id):
         # note x and y for every T, to track moving object
         xy_by_time = {}
         for shape in roi.copyShapes():
-            if type(shape) == omero.model.RectangleI:
+            if isinstance(shape, omero.model.RectangleI):
                 # check t range and z range for every rectangle
                 # t and z (and c) for shape is optional
                 # https://www.openmicroscopy.org/site/support/omero5.2/developers/Model/EveryObject.html#shape

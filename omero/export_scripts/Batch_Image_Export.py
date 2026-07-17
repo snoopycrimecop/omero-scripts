@@ -42,10 +42,7 @@ import glob
 import zipfile
 from datetime import datetime
 
-try:
-    from PIL import Image  # see ticket:2597
-except ImportError:
-    import Image
+from PIL import Image
 
 # keep track of log strings.
 log_strings = []
@@ -123,7 +120,7 @@ def save_plane(image, format, c_name, z_range, project_z, t=0, channel=None,
         w, h = plane.size
         fraction = (float(zoom_percent) / 100)
         plane = plane.resize((int(w * fraction), int(h * fraction)),
-                             Image.ANTIALIAS)
+                             Image.LANCZOS)
 
     if format == "PNG":
         img_name = make_image_name(
@@ -572,7 +569,7 @@ See http://help.openmicroscopy.org/export.html#batch""",
         scripts.String(
             "Zoom", grouping="7", values=zoom_percents,
             description="Zoom (jpeg, png or tiff) before saving with"
-            " ANTIALIAS interpolation", default="100%"),
+            " LANCZOS interpolation", default="100%"),
 
         scripts.String(
             "Format", grouping="8",
