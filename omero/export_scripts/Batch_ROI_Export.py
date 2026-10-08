@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 # -----------------------------------------------------------------------------
-#   Copyright (C) 2018-2020 University of Dundee. All rights reserved.
+#   Copyright (C) 2018-2026 University of Dundee. All rights reserved.
 
 #   This program is free software; you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -373,7 +373,7 @@ def run_script():
             description="List of Dataset IDs or Image IDs").ofType(rlong(0)),
 
         scripts.List(
-            "Channels", grouping="3", default=[1, 2, 3, 4],
+            "Channels", grouping="3", default=[1],
             description="Indices of Channels to measure intensity."
             ).ofType(rint(0)),
 
@@ -389,7 +389,7 @@ def run_script():
                          "and Polylines. Disable this to reduce the "
                          "size of the CSV file when exporting large "
                          "numbers of ROIs"),
-            default=True),
+            default=False),
 
         scripts.String(
             "File_Name", grouping="6", default=DEFAULT_FILE_NAME,
