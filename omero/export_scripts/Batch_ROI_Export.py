@@ -30,6 +30,7 @@ from omero.rtypes import rlong, rint, rstring, robject, unwrap
 from omero.model import RectangleI, EllipseI, LineI, PolygonI, PolylineI, \
     MaskI, LabelI, PointI
 from math import sqrt, pi
+import csv
 import re
 
 DEFAULT_FILE_NAME = "Batch_ROI_Export.csv"
@@ -335,12 +336,13 @@ def batch_roi_export(conn, script_params):
     csv_header = get_csv_header(units_symbol)
 
     row_count = 0
-    with open(file_name, 'w') as csv_file:
-        csv_file.write(csv_header)
+    with open(file_name, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+        writer.writerow(csv_header)
         for image in images:
             for row in get_export_data(conn, script_params, image, units):
                 cells = [str(row.get(name, "")) for name in COLUMN_NAMES]
-                csv_file.write("\n" + ",".join(cells))
+                writer.writerow(cells)
                 row_count += 1
 
     file_ann = conn.createFileAnnfromLocalFile(file_name, mimetype="text/csv")
