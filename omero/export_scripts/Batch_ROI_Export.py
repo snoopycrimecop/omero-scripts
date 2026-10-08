@@ -102,7 +102,10 @@ def get_export_data(conn, script_params, image, units=None):
         roi_tags = []
         if script_params.get("Export_ROI_Tags", False):
             tag_links = conn.getAnnotationLinks("roi", [roi.id.val])
-            roi_tags = [unwrap(link.child.getTextValue()) for link in tag_links]
+            roi_tags = [unwrap(lnk.child.getTextValue()) for lnk in tag_links]
+            # remove duplicates and sort
+            roi_tags = list(set(roi_tags))
+            roi_tags.sort()
         for shape in roi.copyShapes():
             label = unwrap(shape.getTextValue())
             label = "" if label is None else label
