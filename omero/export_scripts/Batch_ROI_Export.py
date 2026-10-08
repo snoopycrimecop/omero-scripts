@@ -99,10 +99,13 @@ def get_export_data(conn, script_params, image, units=None):
             well_label = well.getWellPos()
 
     for roi in rois:
+        roi_tags = []
+        if script_params.get("Export_ROI_Tags", False):
+            tag_links = conn.getAnnotationLinks("roi", [roi.id.val])
+            roi_tags = [unwrap(link.child.getTextValue()) for link in tag_links]
         for shape in roi.copyShapes():
             label = unwrap(shape.getTextValue())
-            # wrap label in double quotes in case it contains comma
-            label = "" if label is None else '"%s"' % label.replace(",", ".")
+            label = "" if label is None else label
             shape_type = shape.__class__.__name__.rstrip('I').lower()
             # If shape has no Z or T, we may go through all planes...
             the_z = unwrap(shape.theZ)
@@ -150,6 +153,7 @@ def get_export_data(conn, script_params, image, units=None):
                         add_shape_coords(shape, row_data,
                                          pixel_size_x, pixel_size_y,
                                          include_points)
+                        row_data['ROI Tags'] = ",".join(roi_tags)
                         export_data.append(row_data)
 
     return export_data
@@ -264,12 +268,11 @@ def get_file_name(script_params):
 
 
 def get_csv_header(units_symbol):
-    csv_header = ",".join(COLUMN_NAMES)
     if units_symbol is None:
         units_symbol = "pixels"
-    csv_header = csv_header.replace(",length,", ",length (%s)," % units_symbol)
-    csv_header = csv_header.replace(",area,", ",area (%s)," % units_symbol)
-    return csv_header
+    labels = {"length": "length (%s)" % units_symbol,
+              "area": "area (%s)" % units_symbol}
+    return [labels.get(name, name) for name in COLUMN_NAMES]
 
 
 def link_annotation(objects, file_ann):
@@ -293,6 +296,7 @@ def batch_roi_export(conn, script_params):
 
     dtype = script_params['Data_Type']
     ids = script_params['IDs']
+    export_tags = script_params.get("Export_ROI_Tags", False)
     if dtype in ("Screen", "Plate"):
         COLUMN_NAMES.insert(1, "well_id")
         COLUMN_NAMES.insert(2, "well_row")
@@ -300,6 +304,8 @@ def batch_roi_export(conn, script_params):
         COLUMN_NAMES.insert(4, "well_label")
     if script_params.get("Include_Points_Coords", False):
         COLUMN_NAMES.append("Points")
+    if export_tags:
+        COLUMN_NAMES.append("ROI Tags")
     if dtype == "Image":
         images = list(conn.getObjects("Image", ids))
     elif dtype == "Dataset":
@@ -380,13 +386,18 @@ def run_script():
             ).ofType(rint(0)),
 
         scripts.Bool(
-            "Export_All_Planes", grouping="4",
+            "Export_ROI_Tags", grouping="4",
+            description=("Add a Tags column with ROI Tag values"),
+            default=False),
+
+        scripts.Bool(
+            "Export_All_Planes", grouping="5",
             description=("Export all Z and T planes for shapes "
                          "where Z and T are not set?"),
             default=False),
 
         scripts.Bool(
-            "Include_Points_Coords", grouping="5",
+            "Include_Points_Coords", grouping="6",
             description=("Export the Points string for Polygons "
                          "and Polylines. Disable this to reduce the "
                          "size of the CSV file when exporting large "
@@ -394,7 +405,7 @@ def run_script():
             default=False),
 
         scripts.String(
-            "File_Name", grouping="6", default=DEFAULT_FILE_NAME,
+            "File_Name", grouping="7", default=DEFAULT_FILE_NAME,
             description="Name of the exported CSV file"),
 
         authors=["William Moore", "OME Team"],
