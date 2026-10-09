@@ -132,7 +132,7 @@ def get_export_data(conn, script_params, image, units=None):
                     for c, ch_index in enumerate(ch_indexes):
                         row_data = {
                             "image_id": image.getId(),
-                            "image_name": '"%s"' % image_name,
+                            "image_name": image_name,
                             "roi_id": roi.id.val,
                             "shape_id": shape.id.val,
                             "type": shape_type,
