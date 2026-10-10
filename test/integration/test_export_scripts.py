@@ -117,7 +117,11 @@ class TestExportScripts(ScriptTest):
             polygon_planes = size_c * size_z * size_t
         # Rows: Header + rect with Z/T set + polygon without Z/T
         row_count = 1 + size_c + polygon_planes
-        assert len(csv_text.split("\n")) == row_count
+        # csv.writer adds an extra newline at the end
+        rows = csv_text.split("\n")
+        assert len(rows) == row_count + 1
+        non_empty_rows = [row for row in rows if row.strip()]
+        assert len(non_empty_rows) == row_count
 
         # Check first 2 rows of csv (except Std dev)
         zt = ","
@@ -129,11 +133,12 @@ class TestExportScripts(ScriptTest):
         expected = ("image_id,image_name,roi_id,shape_id,type,text,"
                     "z,t,channel,area (pixels),length (pixels),"
                     "points,min,max,sum,mean,std_dev,"
-                    "X,Y,Width,Height,RadiusX,RadiusY,X1,Y1,X2,Y2,Points\n"
-                    "%s,\"%s\",%s,%s,polygon,\"%s\",%s,0,%s,,%s,") % (
+                    "X,Y,Width,Height,RadiusX,RadiusY,X1,Y1,X2,Y2")
+        expected_row = "%s,%s,%s,%s,polygon,%s,%s,0,%s,,%s," % (
             image.id.val, image_name, roi.id.val,
             polygon.id.val, label_text, zt, area, points_min_max_sum_mean)
         assert csv_text.startswith(expected)
+        assert expected_row in csv_text
 
     @pytest.mark.broken(
         reason=('https://trello.com/c/AlN5hp6g/144-make-movie-tests-failures'))
